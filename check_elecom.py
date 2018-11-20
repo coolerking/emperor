@@ -120,7 +120,7 @@ def init():
         axis_map.append(axis_name)
         axis_states[axis_name] = 0.0
         print(' ', axis_name)
-
+        print('    = 0x%02x' % axis)
 
     # Get the button map.
     buf = array.array('H', [0] * 200)
@@ -131,8 +131,8 @@ def init():
         btn_name = button_names.get(btn, 'unknown(0x%03x)' % btn)
         button_map.append(btn_name)
         button_states[btn_name] = 0
-        print(' ', button_name)
-
+        print(' ', btn_name)
+        print('    = 0x%03x' % btn)
 
 if __name__ == '__main__':
     init()
