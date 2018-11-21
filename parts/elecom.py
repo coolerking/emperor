@@ -82,6 +82,7 @@ class JC_U3912T_Joystick(Joystick):
         for btn_name in self.button_map:
             self.button_states[btn_name] = 0
         '''
+        
     def poll(self):
         '''
         ポーリング処理を実行する。
