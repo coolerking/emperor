@@ -161,6 +161,8 @@ class JC_U3912T_JoystickController(JoystickController):
             'left_stick_horz': self.set_steering,
             'right_stick_vert': self.set_throttle,
         }
+    def getJsdev(self):
+        return self.js.getJsdev()
 
 
 def main():

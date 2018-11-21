@@ -161,6 +161,8 @@ class F710_JoystickController(JoystickController):
             'LT_pressure': self.increase_max_throttle,
             'RT_pressure': self.decrease_max_throttle,
         }
+    def getJsdev(self):
+        return self.js.getJsdev()
 
 def main():
     ctr = F710_JoystickController(
