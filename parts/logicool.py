@@ -101,16 +101,22 @@ class F710_Joystick(Joystick):
 
         return button, button_state, axis, axis_val
 
-    def test_poll(self):
+    def _test_poll(self):
         evbuf = self.jsdev.read(8)
         if evbuf:
             _, value, typev, number = struct.unpack('IhBB', evbuf)
             if typev == 1:
-                button_name = self.button_names[number]
-                print('[B] ', button_name, ' pressed value= ', value)
+                if number < self.num_buttons:
+                    button_name = self.button_names[number]
+                    print('[B] ', button_name, ' pressed value= ', value)
+                else:
+                    print('[B] out of range number=', number)
             elif typev == 2:
-                axis_name = self.axis_names[number]
-                print('[A] ', axis_name, ' pressed value= ', value)
+                if number < self.num_axes:
+                    axis_name = self.axis_names[number]
+                    print('[A] ', axis_name, ' pressed value= ', value)
+                else:
+                    print('[A] out of range number=', number)
             else:
                 print('[W] warning: typev=', typev, ', number=', number)
 
@@ -172,9 +178,9 @@ class F710_JoystickController(JoystickController):
             'RT_pressure': self.decrease_max_throttle,
         }
 
-    def test_poll(self):
+    def _test_poll(self):
         while True:
-            self.js.test_poll()
+            self.js._test_poll()
 
 def main():
     ctr = F710_JoystickController(
@@ -182,7 +188,7 @@ def main():
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
     ctr.init_js()
-    ctr.test_poll()
+    ctr._test_poll()
 
 if __name__ == '__main__':
     main()
