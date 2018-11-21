@@ -136,7 +136,7 @@ class F710_Joystick(Joystick):
                 return button, button_state, axis, axis_val
 
             if typev == 1:
-                if len(self.button_map) >= number:
+                if len(self.button_map) <= number:
                     print('[poll] out of range button_map number=', number, ', len=', len(self.button_map))
                     print(' [debug] ignore event')
                     return button, button_state, axis, axis_val
@@ -147,7 +147,7 @@ class F710_Joystick(Joystick):
                     button_state = value
 
             if typev == 2:
-                if len(self.axis_map) >= number:
+                if len(self.axis_map) <= number:
                     print('[poll] out of range axis_map number=', number, ', len=', len(self.axis_map))
                     print(' [debug] ignore event')
                     return button, button_state, axis, axis_val
