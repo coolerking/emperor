@@ -81,5 +81,15 @@ def init():
         print(' ', btn_name)
         print('    = 0x%03x' % btn)
 
+    EVENT_FORMAT = "llHHI"; # long, long, unsigned short, unsigned short, unsigned int
+    EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
+
+    with open('/dev/input/event0', "rb") as file:
+    event = file.read(EVENT_SIZE)
+    while event:
+        #(tv_sec, tv_usec, type, code, value) = struct.unpack(EVENT_FORMAT, event)
+        print(struct.unpack(EVENT_FORMAT, event))
+        event = file.read(EVENT_SIZE)
+
 if __name__ == '__main__':
     init()
