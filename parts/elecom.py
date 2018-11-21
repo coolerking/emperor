@@ -164,7 +164,6 @@ def main():
     ctr = JC_U3912T_JoystickController(
                  max_throttle=0.25,
                  steering_scale=1.0,
-                 throttle_axis='rz',
                  auto_record_on_throttle=True)
 
     evbuf = ctr.js.jsdev.read(8)
