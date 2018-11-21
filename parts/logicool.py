@@ -161,7 +161,7 @@ class F710_JoystickController(JoystickController):
 
 def main():
     ctr = F710_JoystickController(
-                 max_throttle=0.25,
+                 throttle_scale=0.25,
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
 

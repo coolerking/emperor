@@ -162,7 +162,7 @@ class JC_U3912T_JoystickController(JoystickController):
 
 def main():
     ctr = JC_U3912T_JoystickController(
-                 max_throttle=0.25,
+                 throttle_scale=0.25,
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
 
