@@ -168,7 +168,7 @@ def main():
 
     evbuf = ctr.js.jsdev.read(8)
     while evbuf:
-        tval, value, typev, number = struct.unpack('IhBB', evbuf)
+        _, value, typev, number = struct.unpack('IhBB', evbuf)
         if typev == 1:
             button_name = ctr.js.button_names[number]
             print('[B] ', button_name, ' pressed value= ', value)
