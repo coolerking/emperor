@@ -81,14 +81,14 @@ def init():
             print(' ', btn_name)
             print('    = 0x%03x' % btn)
 
-        EVENT_FORMAT = "llHHI"; # long, long, unsigned short, unsigned short, unsigned int
-        EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
-
-        event = jsdev.read(EVENT_SIZE)
+        JS_FORMAT = "IhBB" # long, long, unsigned short, unsigned short, unsigned int
+        JS_SIZE = struct.calcsize(JS_FORMAT)
+        print ('JS_SIZE = ', JS_SIZE)
+        event = jsdev.read(JS_SIZE)
         while event:
-            #(tv_sec, tv_usec, type, code, value) = struct.unpack(EVENT_FORMAT, event)
-            print(struct.unpack(EVENT_FORMAT, event))
-            event = jsdev.read(EVENT_SIZE)
+            #(tval, value, typev, number) = struct.unpack(EVENT_FORMAT, event)
+            print(struct.unpack(JS_FORMAT, event))
+            event = jsdev.read(JS_SIZE)
 
 if __name__ == '__main__':
     init()
