@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-ELECOM製ジョイスティック JC-U3912T を使用するためのpartクラス。
+Logicool製ジョイスティック F710 を使用するためのpartクラス。
 donkeypart_ps3_controller パッケージのクラスを基底クラスとして使用するため、
 先にインストールしておく必要がある。
 
@@ -12,31 +12,31 @@ pip install -e .
 import struct
 from donkeypart_ps3_controller.part import Joystick, JoystickController
 
-class JC_U3912T_Joystick(Joystick):
+class F710_Joystick(Joystick):
 
     def __init__(self, *args, **kwargs):
-        super(JC_U3912T_Joystick, self).__init__(*args, **kwargs)
+        super(F710_Joystick, self).__init__(*args, **kwargs)
 
         self.axis_names = {
             0:  'left_stick_horz',
             1:  'left_stick_vert',
-            2:  'right_stick_vert',
+            2:  'LT_pressure',
             3:  'right_stick_horz',
-            4:  'dpad_horz',
-            5:  'dpad_vert'
+            4:  'right_stick_vert',
+            5:  'RT_pressure',
+            6:  'dpad_horz',
+            7:  'dpad_vert',
         }
 
         self.button_names = {
-            0: '1',   # square
-            1: '2',   # triangle
-            2: '3',   # cross
-            3: '4',   # circle
-            4: '5',   # L1
-            5: '6',   # R1
-            6: '7',   # L2
-            7: '8',   # R2
-            10: '11', # select
-            11: '12'  # start
+            0: 'A',     # cross
+            1: 'B',     # circle
+            2: 'X',     # square
+            3: 'Y',     # triangle
+            4: 'LB',    # L1
+            5: 'RB',    # R1
+            6: 'BACK',  # select
+            7: 'START', # start
         }
     
     def init(self):
@@ -52,7 +52,7 @@ class JC_U3912T_Joystick(Joystick):
         戻り値
             なし 
         '''
-        super(JC_U3912T_Joystick, self).init()
+        super(F710_Joystick, self).init()
 
         self.num_axes = len(self.axis_names)
         self.axis_map = self.axis_names.values()
@@ -101,17 +101,17 @@ class JC_U3912T_Joystick(Joystick):
 
         return button, button_state, axis, axis_val
 
-class JC_U3912T_JoystickController(JoystickController):
+class F710_JoystickController(JoystickController):
     '''
     A Controller object helps create a new controller object and mapping
     '''
 
     def __init__(self, *args, **kwargs):
-        super(JC_U3912T_JoystickController, self).__init__(*args, **kwargs)
+        super(F710_JoystickController, self).__init__(*args, **kwargs)
 
     def init_js(self):
         '''
-        JC_U3912T_Joystickオブジェクトを生成、初期化する。
+        F710_Joystickオブジェクトを生成、初期化する。
 
         引数
             なし
@@ -119,7 +119,7 @@ class JC_U3912T_JoystickController(JoystickController):
             なし
         '''
         try:
-            self.js = JC_U3912T_Joystick(self.dev_fn)
+            self.js = F710_Joystick(self.dev_fn)
             self.js.init()
         except FileNotFoundError:
             print(self.dev_fn, "not found.")
@@ -129,7 +129,7 @@ class JC_U3912T_JoystickController(JoystickController):
 
     def init_trigger_maps(self):
         '''
-        JC-U3912T上の各ボタンに機能を割り当てるマッピング情報を
+        F710上の各ボタンに機能を割り当てるマッピング情報を
         初期化する。
 
         引数
@@ -138,30 +138,29 @@ class JC_U3912T_JoystickController(JoystickController):
             なし
         '''
         self.button_down_trigger_map = {
-            '11': self.toggle_mode,
-            '4': self.toggle_manual_recording,
-            '2': self.erase_last_N_records,
-            '3': self.emergency_stop,
-            '7': self.increase_max_throttle,
-            '8': self.decrease_max_throttle,
-            '12': self.toggle_constant_throttle,
-            "6": self.chaos_monkey_on_right,
-            "5": self.chaos_monkey_on_left,
+            'BACK': self.toggle_mode,
+            'B': self.toggle_manual_recording,
+            'Y': self.erase_last_N_records,
+            'A': self.emergency_stop,
+            'START': self.toggle_constant_throttle,
+            "RB": self.chaos_monkey_on_right,
+            "LB": self.chaos_monkey_on_left,
         }
 
         self.button_up_trigger_map = {
-            "6": self.chaos_monkey_off,
-            "5": self.chaos_monkey_off,
+            "RB": self.chaos_monkey_off,
+            "LB": self.chaos_monkey_off,
         }
 
         self.axis_trigger_map = {
             'left_stick_horz': self.set_steering,
             'right_stick_vert': self.set_throttle,
+            'LT_pressure': self.increase_max_throttle,
+            'RT_pressure': self.decrease_max_throttle,
         }
 
-
 def main():
-    ctr = JC_U3912T_JoystickController(
+    ctr = F710_JoystickController(
                  max_throttle=0.25,
                  steering_scale=1.0,
                  throttle_axis='rz',
@@ -169,7 +168,7 @@ def main():
 
     evbuf = ctr.js.jsdev.read(8)
     while evbuf:
-        _, value, typev, number = struct.unpack('IhBB', evbuf)
+        tval, value, typev, number = struct.unpack('IhBB', evbuf)
         if typev == 1:
             button_name = ctr.js.button_names[number]
             print('[B] ', button_name, ' pressed value= ', value)
