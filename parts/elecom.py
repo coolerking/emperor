@@ -37,8 +37,8 @@ class JC_U3912T_Joystick(Joystick):
             0:  'left_stick_horz',
             1:  'left_stick_vert',
             2:  'right_stick_vert',
-            3:  'right_stick_horz',
-            4:  'dpad_horz',
+            3:  'right_stick_horz', # unknown
+            4:  'dpad_horz', # unknown
             5:  'dpad_vert'
         }
 
@@ -51,6 +51,8 @@ class JC_U3912T_Joystick(Joystick):
             5: '6',   # R1
             6: '7',   # L2
             7: '8',   # R2
+            8: 'left_stick_pressure', # 9
+            9: 'right_stick_pressure', # 10
             10: '11', # select
             11: '12'  # start
         }

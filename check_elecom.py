@@ -88,7 +88,7 @@ def init():
         while event:
             #(tval, value, typev, number) = struct.unpack(EVENT_FORMAT, event)
             tval, value, typev, number = struct.unpack(JS_FORMAT, event)
-            print('(', tval, ', ', value, ', ', typev, ', ', number, ')')
+            print('(', tval, ', ', value, ', ', typev, ', ', number, '[ 0x03x ])' % number)
             event = jsdev.read(JS_SIZE)
 
 if __name__ == '__main__':
