@@ -8,13 +8,29 @@ git clone https://github.com/autorope/donkeypart_ps3_controller.git
 cd donkeypart_ps3_controller
 pip install -e .
 
+各ボタン/各axisにどの機能が割り振られているかは、
+コントロールクラス JC_U3912T_JoystickController の init_trigger_maps() を
+参照のこと
 """
 import struct
 from donkeypart_ps3_controller.part import Joystick, JoystickController
 
 class JC_U3912T_Joystick(Joystick):
+    '''
+    ELECOM社製 JC-U3912T ジョイスティック固有の情報を定義したサブクラス。
+    基本的にコントローラから呼び出して使用する。
+    '''
 
     def __init__(self, *args, **kwargs):
+        '''
+        コンストラクタ。
+        JC-U3912Tでは、デバイスからbutton/axis情報を入手せず、
+        予め調べたマッピング情報を使用する。
+        引数
+            any     Joystickクラスのコンストラクタを参照のこと
+        戻り値
+            なし
+        '''
         super(JC_U3912T_Joystick, self).__init__(*args, **kwargs)
 
         self.axis_names = {
@@ -67,6 +83,19 @@ class JC_U3912T_Joystick(Joystick):
             self.button_states[btn_name] = 0
 
     def poll(self):
+        '''
+        ポーリング処理を実行する。
+        キャラクタデバイスから読み取り、どのキーがどのくらい押下、傾斜させたか
+        を数値化して戻す。
+
+        引数
+            なし
+        戻り値
+            button          ボタン名
+            button_state    変化後のボタン状態
+            axis            axis名
+            axis_state      変化後のaxis状態
+        '''
         button = None
         button_state = None
         axis = None
@@ -102,6 +131,16 @@ class JC_U3912T_Joystick(Joystick):
         return button, button_state, axis, axis_val
 
     def _test_poll(self):
+        '''
+        Joystick in-key テスト用メソッド
+        入力した button/axis をコントローラが何と判断しているか
+        確認することができる
+
+        引数
+            なし
+        戻り値
+            なし
+        '''
         evbuf = self.jsdev.read(8)
         if evbuf:
             _, value, typev, number = struct.unpack('IhBB', evbuf)
@@ -122,10 +161,15 @@ class JC_U3912T_Joystick(Joystick):
 
 class JC_U3912T_JoystickController(JoystickController):
     '''
-    A Controller object helps create a new controller object and mapping
+    ELECOM 社製 JC-U3912T ジョイスティックのためのコントローラクラス。
+    Vihecleへadd()可能なpartクラスとして実装されている。
     '''
 
     def __init__(self, *args, **kwargs):
+        '''
+        デフォルトコンストラクタ。
+        親クラスのコンストラクタ処理を実行する。
+        '''
         super(JC_U3912T_JoystickController, self).__init__(*args, **kwargs)
 
     def init_js(self):
@@ -148,7 +192,7 @@ class JC_U3912T_JoystickController(JoystickController):
 
     def init_trigger_maps(self):
         '''
-        JC-U3912T上の各ボタンに機能を割り当てるマッピング情報を
+        JC-U3912T 上の各ボタンに機能を割り当てるマッピング情報を
         初期化する。
 
         引数
@@ -177,21 +221,41 @@ class JC_U3912T_JoystickController(JoystickController):
             'left_stick_horz': self.set_steering,
             'right_stick_vert': self.set_throttle,
         }
-    def getJsdev(self):
-        return self.js.getJsdev()
 
     def _test_poll(self):
+        '''
+        in-keyテストを無限に繰り返す。
+
+        引数
+            なし
+        戻り値
+            なし
+        '''
         while True:
             self.js._test_poll()
 
-def main():
-    ctr = JC_U3912T_JoystickController(
-                 throttle_scale=0.25,
-                 steering_scale=1.0,
-                 auto_record_on_throttle=True)
+def main(ctr):
+    '''
+    テストを実行するための関数。
 
+    引数
+        ctr     対象とする JoystickController オブジェクト
+    戻り値
+        なし
+    '''
+    if ctr is None:
+        print('[main] please set argument')
+        return
+
+    print('Joystick controller in-key test')
+    print('    press button/axis on the joystick device')
+    print('    press Ctrl+C to quit test')
     ctr.init_js()
     ctr._test_poll()
 
 if __name__ == '__main__':
-    main()
+    ctr = JC_U3912T_JoystickController(
+                 throttle_scale=0.25,
+                 steering_scale=1.0,
+                 auto_record_on_throttle=True)
+    main(ctr)
