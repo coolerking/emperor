@@ -85,11 +85,11 @@ def init():
     EVENT_SIZE = struct.calcsize(EVENT_FORMAT)
 
     with open('/dev/input/event0', "rb") as file:
-    event = file.read(EVENT_SIZE)
-    while event:
-        #(tv_sec, tv_usec, type, code, value) = struct.unpack(EVENT_FORMAT, event)
-        print(struct.unpack(EVENT_FORMAT, event))
         event = file.read(EVENT_SIZE)
+        while event:
+            #(tv_sec, tv_usec, type, code, value) = struct.unpack(EVENT_FORMAT, event)
+            print(struct.unpack(EVENT_FORMAT, event))
+            event = file.read(EVENT_SIZE)
 
 if __name__ == '__main__':
     init()
