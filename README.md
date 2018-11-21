@@ -18,7 +18,15 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
    git clone https://github.com/coolerking/emperor.git
    ```
 
-### F710ジョイスティックを使用する
+### Logicool F710 ジョイスティックを使用する
+
+1. `~/mycar/manage.py` を編集する
+
+TBD
+
+### ELECOM JC-U3917T ジョイスティックを使用する
+
+1. `~/mycar/manage.py` を編集する
 
 TBD
 
@@ -68,17 +76,23 @@ TBD
 
    以下の手順で自動運転を実行します。
    ```bash
+   git clone https://github.com/autorope/donkeypart_ps3_controller.git
+   cd donkeypart_ps3_controller
+   pip install -e .
+   cd ..
    cd emperor
    python manage.py drive --model models/mypilot
    ```
+
+
 
 ## 利用OSS
 
 * GitHub [autorope/donkeycar](https://github.com/autorope/donkeycar) v2.5.8
   Donkey Car の基本機能OSS、MITライセンス準拠です。2.5.1から2.5.8へ更新した際にpartsのリポジトリは分割されました。
 
-* GitHub [mituhiromatuura/donkey](https://github.com/mituhiromatuura/donkey)
-  GitHub上にてMITライセンス準拠で公開されている GitHub mituhiromatuura/donkey リポジトリのparts/controller_logicool.py を利用しています。
+* GitHub [autorope/donkeypart_ps3_controller](https://github.com/autorope/donkeypart_ps3_controller)
+  PS3やPS4を使用しない場合でもF710やJC-U3912Tの各コントローラが基底クラスとして使用しています。
 
 ## ライセンス
 
