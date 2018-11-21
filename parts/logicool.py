@@ -101,8 +101,18 @@ class F710_Joystick(Joystick):
 
         return button, button_state, axis, axis_val
 
-    def getJsdev(self):
-        return self.jsdev
+    def test_poll(self):
+        evbuf = self.jsdev.read(8)
+        if evbuf:
+            _, value, typev, number = struct.unpack('IhBB', evbuf)
+            if typev == 1:
+                button_name = self.button_names[number]
+                print('[B] ', button_name, ' pressed value= ', value)
+            elif typev == 2:
+                axis_name = self.axis_names[number]
+                print('[A] ', axis_name, ' pressed value= ', value)
+            else:
+                print('[W] warning: typev=', typev, ', number=', number)
 
 class F710_JoystickController(JoystickController):
     '''
@@ -161,26 +171,18 @@ class F710_JoystickController(JoystickController):
             'LT_pressure': self.increase_max_throttle,
             'RT_pressure': self.decrease_max_throttle,
         }
-    def getJsdev(self):
-        return self.js.getJsdev()
+
+    def test_poll(self):
+        while True:
+            self.js.test_poll()
 
 def main():
     ctr = F710_JoystickController(
                  throttle_scale=0.25,
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
-
-    evbuf = ctr.getJsdev().read(8)
-    while evbuf:
-        _, value, typev, number = struct.unpack('IhBB', evbuf)
-        if typev == 1:
-            button_name = ctr.js.button_names[number]
-            print('[B] ', button_name, ' pressed value= ', value)
-            axis_name = ctr.js.axis_names[number]
-            print('[A] ', axis_name, ' pressed value= ', value)
-        else:
-            print('[W] warning: typev=', typev, ', number=', number)
-        evbuf = ctr.getJsdev().read(8)
+    ctr.init_js()
+    ctr.test_poll()
 
 if __name__ == '__main__':
     main()
