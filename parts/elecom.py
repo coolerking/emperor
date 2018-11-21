@@ -69,7 +69,7 @@ class JC_U3912T_Joystick(Joystick):
             なし 
         '''
         super(JC_U3912T_Joystick, self).init()
-
+        '''
         self.num_axes = len(self.axis_names)
         self.axis_map = self.axis_names.values()
         self.axis_states = {}
@@ -81,7 +81,7 @@ class JC_U3912T_Joystick(Joystick):
         self.button_states = {}
         for btn_name in self.button_map:
             self.button_states[btn_name] = 0
-
+        '''
     def poll(self):
         '''
         ポーリング処理を実行する。
