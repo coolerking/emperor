@@ -101,6 +101,9 @@ class JC_U3912T_Joystick(Joystick):
 
         return button, button_state, axis, axis_val
 
+    def getJsdev(self):
+        return self.jsdev
+
 class JC_U3912T_JoystickController(JoystickController):
     '''
     A Controller object helps create a new controller object and mapping
@@ -166,7 +169,7 @@ def main():
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
 
-    evbuf = ctr.js.jsdev.read(8)
+    evbuf = ctr.js.getJsdev().read(8)
     while evbuf:
         _, value, typev, number = struct.unpack('IhBB', evbuf)
         if typev == 1:
@@ -176,7 +179,7 @@ def main():
             print('[A] ', axis_name, ' pressed value= ', value)
         else:
             print('[W] warning: typev=', typev, ', number=', number)
-        evbuf = ctr.js.jsdev.read(8)
+        evbuf = ctr.js.getJsdev().read(8)
 
 if __name__ == '__main__':
     main()
