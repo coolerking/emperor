@@ -73,25 +73,34 @@ class F710_Joystick(Joystick):
             なし 
         '''
         super(F710_Joystick, self).init()
-        '''
+        print('[input] axis_map/button_map re-config * before')
+        print(' [debug] axis_map:')
+        for axis_name in self.axis_map:
+            print('  ', axis_name)
+        print(' [debug] button_map:')
+        for btn_name in self.button_map:
+            print('  ', btn_name)
+        
         self.num_axes = len(self.axis_names)
-        self.axis_map = self.axis_names.values()
+        self.axis_map = list(self.axis_names.values())
         self.axis_states = {}
         for axis_name in self.axis_map:
             self.axis_states[axis_name] = 0.0
         
         self.num_buttons = len(self.button_names)
-        self.button_map = self.button_names.values()
+        self.button_map = list(self.button_names.values())
         self.button_states = {}
         for btn_name in self.button_map:
             self.button_states[btn_name] = 0
-        '''
-        print('[debug] axis_map:')
+
+        print('[input] axis_map/button_map re-config * after')
+        print(' [debug] axis_map:')
         for axis_name in self.axis_map:
-            print(' ', axis_name)
-        print('[debug] button_map:')
+            print('  ', axis_name)
+        print(' [debug] button_map:')
         for btn_name in self.button_map:
-            print(' ', btn_name)
+            print('  ', btn_name)
+
     def poll(self):
         '''
         ポーリング処理を実行する。
