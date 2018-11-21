@@ -81,13 +81,14 @@ def init():
             print(' ', btn_name)
             print('    = 0x%03x' % btn)
 
-        JS_FORMAT = "IhBB" # long, long, unsigned short, unsigned short, unsigned int
+        JS_FORMAT = "IhBB" 
         JS_SIZE = struct.calcsize(JS_FORMAT)
         print ('JS_SIZE = ', JS_SIZE)
         event = jsdev.read(JS_SIZE)
         while event:
             #(tval, value, typev, number) = struct.unpack(EVENT_FORMAT, event)
-            print(struct.unpack(JS_FORMAT, event))
+            tval, value, typev, number = struct.unpack(JS_FORMAT, event)
+            print('(', tval, ', ', value, ', ', typev, ', ', number, ')')
             event = jsdev.read(JS_SIZE)
 
 if __name__ == '__main__':
