@@ -171,7 +171,7 @@ def main():
                  steering_scale=1.0,
                  auto_record_on_throttle=True)
 
-    evbuf = ctr.js.getJsdev().read(8)
+    evbuf = ctr.getJsdev().read(8)
     while evbuf:
         _, value, typev, number = struct.unpack('IhBB', evbuf)
         if typev == 1:
@@ -181,7 +181,7 @@ def main():
             print('[A] ', axis_name, ' pressed value= ', value)
         else:
             print('[W] warning: typev=', typev, ', number=', number)
-        evbuf = ctr.js.getJsdev().read(8)
+        evbuf = ctr.getJsdev().read(8)
 
 if __name__ == '__main__':
     main()
