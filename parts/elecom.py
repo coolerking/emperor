@@ -82,6 +82,12 @@ class JC_U3912T_Joystick(Joystick):
         for btn_name in self.button_map:
             self.button_states[btn_name] = 0
         '''
+        print('[debug] axis_map:')
+        for axis_name in self.axis_map:
+            print(' ', axis_name)
+        print('[debug] button_map:')
+        for btn_name in self.button_map:
+            print(' ', btn_name)
         
     def poll(self):
         '''
