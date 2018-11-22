@@ -231,20 +231,20 @@ class JC_U3912T_JoystickController(JoystickController):
             なし
         '''
         self.button_down_trigger_map = {
-            '11': self.toggle_mode,              # 運転モード変更(user, local_angle, local)
-            '4': self.toggle_manual_recording,   # tubデータ保管
-            '2': self.erase_last_N_records,      # 最後のN件tubデータ削除
-            '3': self.emergency_stop,            # 緊急ストップ
-            '7': self.increase_max_throttle,     # 最大スロットル値＋＋
-            '8': self.decrease_max_throttle,     # 最大スロットル値ーー
-            '12': self.toggle_constant_throttle, # 常時一定スロットル確保
-            "6": self.chaos_monkey_on_right,     # カオスモード
-            "5": self.chaos_monkey_on_left,      # カオスモード
+            '11': self.toggle_mode,                # 運転モード変更(user, local_angle, local)
+            '4': self.toggle_manual_recording,     # tubデータ保管
+            '2': self.erase_last_N_records,        # 最後のN件tubデータ削除(未実装?)
+            '3': self.emergency_stop,              # 緊急ストップ
+            '7': self.increase_max_throttle,       # 最大スロットル値＋＋
+            '8': self.decrease_max_throttle,       # 最大スロットル値ーー
+            '12': self.toggle_constant_throttle,   # 常時一定スロットル確保
+            "6": self.chaos_monkey_on_right,       # カオスモード
+            "5": self.chaos_monkey_on_left,        # カオスモード
         }
 
         self.button_up_trigger_map = {
-            "6": self.chaos_monkey_off,          # カオスモードoff
-            "5": self.chaos_monkey_off,          # カオスモードoff
+            "6": self.chaos_monkey_off,            # カオスモードoff
+            "5": self.chaos_monkey_off,            # カオスモードoff
         }
 
         self.axis_trigger_map = {
