@@ -2,7 +2,7 @@
 
 WORRIORベースのDonkey Car独自アプリのディレクトリをリポジトリ化したものです。
 
-![emperor号](./docs/assets/emperor.jpg)
+![emperor号](./docs/assets/emperor2.jpg)
 
 ## インストール
 
@@ -20,15 +20,85 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
 
 ### Logicool F710 ジョイスティックを使用する
 
-1. `~/mycar/manage.py` を編集する
-
-TBD
+1. Raspberry Piをシャットダウン
+2. Logicool F710コントローラ同梱のUSBドングルをRaspberry Piにセット
+3. Raspberry Piを起動
+4. ターミナル接続し、ログイン
+5. F710本体正面のLogicoolボタンを押す（電源ON）
+6. 以下のコマンドを実行し、F710が接続されていることを確認する
+   ```bash
+   ls /dev/input/js0
+   hexdump /dev/input/js0
+   ```
+   hexdumpを実行後、F710を適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
+7. `~/mycar/manage.py` を次のように編集する
+   ```python
+        # F710用ジョイスティックコントローラを使用
+        from parts.logicool import F710_JoystickController
+        ctr = F710_JoystickController(
+        # PS4 Dualshock4 ジョイスティックコントローラを使用
+        #from donkeypart_ps3_controller.part import PS4JoystickController
+        #ctr = PS4JoystickController(
+        # ELECOM JC-U3912T ジョイスティックコントローラを使用
+        #from parts.elecom import JC_U3912T_JoystickController
+        #ctr = JC_U3912T_JoystickController(
+   ```
 
 ### ELECOM JC-U3917T ジョイスティックを使用する
 
-1. `~/mycar/manage.py` を編集する
+1. Raspberry Piをシャットダウン
+2. ELECOM JC-U3912T コントローラ同梱のUSBドングルをRaspberry Piにセット
+3. Raspberry Piを起動
+4. ターミナル接続し、ログイン
+5. JC-U3912T本体下部の電源スイッチを入れ、本体のボタンを適当に数回操作する
+6. 以下のコマンドを実行し、F710が接続されていることを確認する
+   ```bash
+   ls /dev/input/js0
+   hexdump /dev/input/js0
+   ```
+   hexdumpを実行後、F710を適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
+7. `~/mycar/manage.py` を次のように編集する
+   ```python
+        # F710用ジョイスティックコントローラを使用
+        from parts.logicool import F710_JoystickController
+        ctr = F710_JoystickController(
+        # PS4 Dualshock4 ジョイスティックコントローラを使用
+        #from donkeypart_ps3_controller.part import PS4JoystickController
+        #ctr = PS4JoystickController(
+        # ELECOM JC-U3912T ジョイスティックコントローラを使用
+        #from parts.elecom import JC_U3912T_JoystickController
+        #ctr = JC_U3912T_JoystickController(
+   ```
 
-TBD
+### SONY Dualshock4 PS4 ジョイスティックを使用する
+
+donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://amzn.to/2QYbVhe) を使って接続します。
+
+1. Raspberry Piをシャットダウン
+2. Dualshock4 USBドングル( [別売](https://amzn.to/2QYbVhe) )をRaspberry Piにセット
+3. Raspberry Piを起動
+4. ターミナル接続し、ログイン
+5. Dualshock4 USBドングルを刺した方向に３秒以上押し込み、青LEDの点滅を早くする
+5. Dualshock4のSHAREボタンとPSロゴボタンを同時に3秒以上押す
+   ドングルのLEDが青点灯状態になると成功。
+6. 以下のコマンドを実行し、Dualshock4コントローラが接続されていることを確認する
+   ```bash
+   ls /dev/input/js0
+   hexdump /dev/input/js0
+   ```
+   hexdumpを実行後、Dualshock4コントローラを適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
+7. `~/mycar/manage.py` を次のように編集する
+   ```python
+        # F710用ジョイスティックコントローラを使用
+        #from parts.logicool import F710_JoystickController
+        #ctr = F710_JoystickController(
+        # PS4 Dualshock4 ジョイスティックコントローラを使用
+        from donkeypart_ps3_controller.part import PS4JoystickController
+        ctr = PS4JoystickController(
+        # ELECOM JC-U3912T ジョイスティックコントローラを使用
+        #from parts.elecom import JC_U3912T_JoystickController
+        #ctr = JC_U3912T_JoystickController(
+   ```
 
 ## 実行
 
