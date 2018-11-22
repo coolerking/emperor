@@ -1,10 +1,12 @@
+# -*- coding: utf-8 -*-
 """
-CAR CONFIG
+Emperor号固有の設定
 
-This file is read by your car application's manage.py script to change the car
-performance.
+各自車両の特性を定義するための初期設定ファイルです。
+このファイルは`manage.py`から読み込まれます。
+WARRIORシャーシは後進がないため、ここでは設定していますが動作しません。
 
-EXMAPLE
+例
 -----------
 import dk
 cfg = dk.load_config(config_path='~/mycar/config.py')
