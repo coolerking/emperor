@@ -233,7 +233,7 @@ class F710_JoystickController(JoystickController):
         '''
         self.button_down_trigger_map = {
             'RB': self.toggle_mode,
-            'B': self.toggle_manual_recording,
+            'LB': self.toggle_manual_recording,
             'Y': self.erase_last_N_records,
             'A': self.emergency_stop,
             'LB': self.toggle_constant_throttle,
