@@ -232,11 +232,11 @@ class F710_JoystickController(JoystickController):
             なし
         '''
         self.button_down_trigger_map = {
-            'BACK': self.toggle_mode,
+            'RB': self.toggle_mode,
             'B': self.toggle_manual_recording,
             'Y': self.erase_last_N_records,
             'A': self.emergency_stop,
-            'START': self.toggle_constant_throttle,
+            'LB': self.toggle_constant_throttle,
             'LT_pressure': self.chaos_monkey_on_left,
             'RT_pressure': self.chaos_monkey_on_right,
             'X': self.increase_max_throttle,
@@ -244,8 +244,8 @@ class F710_JoystickController(JoystickController):
         }
 
         self.button_up_trigger_map = {
-            "RB": self.chaos_monkey_off,
-            "LB": self.chaos_monkey_off,
+            "LT_pressure": self.chaos_monkey_off,
+            "RT_pressure": self.chaos_monkey_off,
         }
 
         self.axis_trigger_map = {
