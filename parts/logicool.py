@@ -125,25 +125,22 @@ class F710_Joystick(Joystick):
         if self.jsdev is None:
             return button, button_state, axis, axis_val
 
-        # Main event loop
+        # イベント処理
         evbuf = self.jsdev.read(8)
 
         if evbuf:
             _, value, typev, number = struct.unpack('IhBB', evbuf)
 
             if typev & 0x80:
-                # ignore initialization event
-                print('[poll] initialization event')
-                print(' [debug] ignore event')
+                # 初期化イベントは無視する
+                #print('[poll] initialization event')
                 return button, button_state, axis, axis_val
 
             if typev == 1:
                 if len(self.button_map) <= number:
                     print('[poll] out of range button_map number=', number, ', len=', len(self.button_map))
-                    print(' [debug] ignore event')
                     return button, button_state, axis, axis_val
                 button = self.button_map[number]
-                # print(tval(_), value, typev, number, button, 'pressed')
                 if button:
                     self.button_states[button] = value
                     button_state = value
@@ -151,7 +148,7 @@ class F710_Joystick(Joystick):
             if typev == 2:
                 if len(self.axis_map) <= number:
                     print('[poll] out of range axis_map number=', number, ', len=', len(self.axis_map))
-                    print(' [debug] ignore event')
+
                     return button, button_state, axis, axis_val
                 axis = self.axis_map[number]
                 if axis:
@@ -232,25 +229,25 @@ class F710_JoystickController(JoystickController):
             なし
         '''
         self.button_down_trigger_map = {
-            'RB': self.toggle_mode,
-            'LB': self.toggle_manual_recording,
-            'Y': self.erase_last_N_records,
-            'A': self.emergency_stop,
-            'LB': self.toggle_constant_throttle,
-            'LT_pressure': self.chaos_monkey_on_left,
-            'RT_pressure': self.chaos_monkey_on_right,
-            'X': self.increase_max_throttle,
-            'B': self.decrease_max_throttle,
+            'RB': self.toggle_mode,                     # 運転モード変更(user, local_angle, local)
+            'LB': self.toggle_manual_recording,         # 手動記録設定変更
+            'Y': self.erase_last_N_records,             # 最後のN件を削除(動作していない?)
+            'A': self.emergency_stop,                   # 緊急ストップ
+            'LB': self.toggle_constant_throttle,        # 一定速度維持
+            'LT_pressure': self.chaos_monkey_on_left,   # カオスモード左
+            'RT_pressure': self.chaos_monkey_on_right,  # カオスモード右
+            'X': self.increase_max_throttle,            # 最大スロットル＋＋
+            'B': self.decrease_max_throttle,            # 最大スロットル－－
         }
 
         self.button_up_trigger_map = {
-            "LT_pressure": self.chaos_monkey_off,
-            "RT_pressure": self.chaos_monkey_off,
+            "LT_pressure": self.chaos_monkey_off,       # カオスモードオフ
+            "RT_pressure": self.chaos_monkey_off,       # カオスモードオフ
         }
 
         self.axis_trigger_map = {
-            'left_stick_horz': self.set_steering,
-            'right_stick_vert': self.set_throttle,
+            'left_stick_horz': self.set_steering,       # ステアリング操作
+            'right_stick_vert': self.set_throttle,      # スロットル操作
 
         }
 
