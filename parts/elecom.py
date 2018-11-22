@@ -11,6 +11,8 @@ pip install -e .
 各ボタン/各axisにどの機能が割り振られているかは、
 コントロールクラス JC_U3912T_JoystickController の init_trigger_maps() を
 参照のこと
+
+Author: Tasuku Hori, facebook.com/hori.tasuku
 """
 import struct
 from donkeypart_ps3_controller.part import Joystick, JoystickController
@@ -37,8 +39,8 @@ class JC_U3912T_Joystick(Joystick):
             0:  'left_stick_horz',
             1:  'left_stick_vert',
             2:  'right_stick_vert',
-            3:  'right_stick_horz', # unknown
-            4:  'dpad_horz', # unknown
+            3:  'right_stick_horz', # unknown 0x10 or x011
+            4:  'dpad_horz', # unknown 0x10 or 0x11
             5:  'dpad_vert'
         }
 
@@ -51,8 +53,8 @@ class JC_U3912T_Joystick(Joystick):
             5: '6',   # R1
             6: '7',   # L2
             7: '8',   # R2
-            8: 'left_stick_pressure', # 9
-            9: 'right_stick_pressure', # 10
+            8: 'left_stick_pressure', # 9_pressure
+            9: 'right_stick_pressure', # 10_pressure
             10: '11', # select
             11: '12'  # start
         }
@@ -71,13 +73,14 @@ class JC_U3912T_Joystick(Joystick):
             なし 
         '''
         super(JC_U3912T_Joystick, self).init()
-        print('[input] axis_map/button_map re-config * before')
-        print(' [debug] axis_map:')
-        for axis_name in self.axis_map:
-            print('  ', axis_name)
-        print(' [debug] button_map:')
-        for btn_name in self.button_map:
-            print('  ', btn_name)
+        # debug code
+        #print('[input] axis_map/button_map re-config * before')
+        #print(' [debug] axis_map:')
+        #for axis_name in self.axis_map:
+        #    print('  ', axis_name)
+        #print(' [debug] button_map:')
+        #for btn_name in self.button_map:
+        #    print('  ', btn_name)
         
         self.num_axes = len(self.axis_names)
         self.axis_map = list(self.axis_names.values())
@@ -91,13 +94,14 @@ class JC_U3912T_Joystick(Joystick):
         for btn_name in self.button_map:
             self.button_states[btn_name] = 0
 
-        print('[input] axis_map/button_map re-config * after')
-        print(' [debug] axis_map:')
-        for axis_name in self.axis_map:
-            print('  ', axis_name)
-        print(' [debug] button_map:')
-        for btn_name in self.button_map:
-            print('  ', btn_name)
+        # debug code
+        #print('[input] axis_map/button_map re-config * after')
+        #print(' [debug] axis_map:')
+        #for axis_name in self.axis_map:
+        #    print('  ', axis_name)
+        #print(' [debug] button_map:')
+        #for btn_name in self.button_map:
+        #    print('  ', btn_name)
 
         
     def poll(self):
@@ -130,14 +134,13 @@ class JC_U3912T_Joystick(Joystick):
 
             if typev & 0x80:
                 # ignore initialization event
-                print('[poll] initialization event')
-                print(' [debug] ignore event')
+                #print('[poll] initialization event')
+                #print(' [debug] ignore event')
                 return button, button_state, axis, axis_val
 
             if typev == 1:
                 if len(self.button_map) <= number:
                     print('[poll] out of range button_map number=', number, ', len=', len(self.button_map))
-                    print(' [debug] ignore event')
                     return button, button_state, axis, axis_val
                 button = self.button_map[number]
                 # print(tval(_), value, typev, number, button, 'pressed')
@@ -148,7 +151,6 @@ class JC_U3912T_Joystick(Joystick):
             if typev == 2:
                 if len(self.axis_map) <= number:
                     print('[poll] out of range axis_map number=', number, ', len=', len(self.axis_map))
-                    print(' [debug] ignore event')
                     return button, button_state, axis, axis_val
                 axis = self.axis_map[number]
                 if axis:
@@ -229,25 +231,25 @@ class JC_U3912T_JoystickController(JoystickController):
             なし
         '''
         self.button_down_trigger_map = {
-            '11': self.toggle_mode,
-            '4': self.toggle_manual_recording,
-            '2': self.erase_last_N_records,
-            '3': self.emergency_stop,
-            '7': self.increase_max_throttle,
-            '8': self.decrease_max_throttle,
-            '12': self.toggle_constant_throttle,
-            "6": self.chaos_monkey_on_right,
-            "5": self.chaos_monkey_on_left,
+            '11': self.toggle_mode,              # 運転モード変更(user, local_angle, local)
+            '4': self.toggle_manual_recording,   # tubデータ保管
+            '2': self.erase_last_N_records,      # 最後のN件tubデータ削除
+            '3': self.emergency_stop,            # 緊急ストップ
+            '7': self.increase_max_throttle,     # 最大スロットル値＋＋
+            '8': self.decrease_max_throttle,     # 最大スロットル値ーー
+            '12': self.toggle_constant_throttle, # 常時一定スロットル確保
+            "6": self.chaos_monkey_on_right,     # カオスモード
+            "5": self.chaos_monkey_on_left,      # カオスモード
         }
 
         self.button_up_trigger_map = {
-            "6": self.chaos_monkey_off,
-            "5": self.chaos_monkey_off,
+            "6": self.chaos_monkey_off,          # カオスモードoff
+            "5": self.chaos_monkey_off,          # カオスモードoff
         }
 
         self.axis_trigger_map = {
-            'left_stick_horz': self.set_steering,
-            'right_stick_vert': self.set_throttle,
+            'left_stick_horz': self.set_steering,  # ステアリング操作
+            'right_stick_vert': self.set_throttle, # スロットル操作
         }
 
     def _test_poll(self):

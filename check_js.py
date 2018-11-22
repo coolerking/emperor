@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+ジョイスティック動作と出力コードを確認するためのプログラム。
+
+キャラクタデバイス  /dev/input/js0 として認識されている
+ジョイスティックのボタン操作を行うとどのようなコードが
+出力されているのかを確認するためのプログラム。
+
+fcntl パッケージを使用するため、Windows環境では動作しない。
+
+Author: Tasuku Hori, facebook.com/hori.tasuku
+"""
 import array
 import time
 import struct
@@ -12,28 +23,57 @@ button_map = []             # ボタンマップ[ボタン名]:init()にて書�
 jsdev = None                # ジョイスティックキャラクタデバイス ファイルオブジェクト
 dev_fn = '/dev/input/js0'   # ジョイスティックキャラクタデバイス パス
 
+# ifdef ELECOM JC-U3912T
+'''
 axis_names = {
-    0x00 : 'left_stick_horz',
-    0x01 : 'left_stick_vert',
-    0x02 : 'right_stic_vert',
-    0x03 : 'right_stick_horz',
-    0x04 : 'dpad_horz',
-    0x05 : 'dpad_vert',
+            0:  'left_stick_horz',
+            1:  'left_stick_vert',
+            2:  'right_stick_vert',
+            3:  'right_stick_horz', # unknown 0x10 or x011
+            4:  'dpad_horz', # unknown 0x10 or 0x11
+            5:  'dpad_vert'
 }
 
 button_names = {
-    0x130 : '1',
-    0x131 : '2',
-    0x132 : '3',
-    0x133 : '4',
-    0x134 : '5',
-    0x135 : '6',
-    0x136 : '7',
-    0x137 : '8',
-    0x138 : '9?',
-    0x139 : '10?',
-    0x13a : '11',
-    0x13b : '12',
+            0: '1',   # square
+            1: '2',   # triangle
+            2: '3',   # cross
+            3: '4',   # circle
+            4: '5',   # L1
+            5: '6',   # R1
+            6: '7',   # L2
+            7: '8',   # R2
+            8: 'left_stick_pressure', # 9_pressure
+            9: 'right_stick_pressure', # 10_pressure
+            10: '11', # select
+            11: '12'  # start
+}
+'''
+
+#ifdef Logicool F710
+axis_names = {
+            0:  'left_stick_horz',
+            1:  'left_stick_vert',
+            2:  'LT_pressure',
+            3:  'right_stick_horz',
+            4:  'right_stick_vert',
+            5:  'RT_pressure',
+            6:  'dpad_horz',
+            7:  'dpad_vert',
+}
+
+button_names = {
+            0:  'A',     # cross
+            1:  'B',     # circle
+            2:  'X',     # square
+            3:  'Y',     # triangle
+            4:  'LB',    # L1
+            5:  'RB',    # R1
+            6:  'BACK',  # select
+            7:  'START', # start
+
+            9:  'left_stick_pressure',
+            10: 'right_stick_pressure',
 }
 
 def init():
