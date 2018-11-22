@@ -237,10 +237,10 @@ class F710_JoystickController(JoystickController):
             'Y': self.erase_last_N_records,
             'A': self.emergency_stop,
             'START': self.toggle_constant_throttle,
-            'left_stick_pressure': self.chaos_monkey_on_left,
-            'right_stick_pressure': self.chaos_monkey_on_right,
-            'LT_pressure': self.increase_max_throttle,
-            'RT_pressure': self.decrease_max_throttle,
+            'LT_pressure': self.chaos_monkey_on_left,
+            'RT_pressure': self.chaos_monkey_on_right,
+            'X': self.increase_max_throttle,
+            'B': self.decrease_max_throttle,
         }
 
         self.button_up_trigger_map = {
