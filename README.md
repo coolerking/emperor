@@ -1,4 +1,4 @@
-# emperor
+# Donkey Car 2号車 "Emperor号" 用アプリリポジトリ
 
 WORRIORベースのDonkey Car独自アプリのディレクトリをリポジトリ化したものです。
 
