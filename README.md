@@ -4,7 +4,6 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
 
 ![emperor号](./docs/assets/emperor2.jpg)
 
-参考価格は約4万円弱です（詳細は後述）。
 
 ## 部品リスト
 
