@@ -88,7 +88,7 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
         #                        # throttle_axis=cfg.JOYSTICK_THROTTLE_AXIS,
         #                         auto_record_on_throttle=cfg.AUTO_RECORD_ON_THROTTLE)
         from parts.bt_elecom import JC_U3912T_JoystickController
-        ctl = JC_U3912T_JoystickController(config_path='parts/jc-u3912t.yml')
+        ctr = JC_U3912T_JoystickController(config_path='parts/jc-u3912t.yml')
     else:
         # ステアリング、スロットル、モードなどを管理するWebサーバを作成する
         # Web Controller part の生成
