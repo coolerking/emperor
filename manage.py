@@ -3,11 +3,11 @@
 """
 Donkey2 準拠の車両の運転やモデルのトレーニングを行うためのスクリプトファイル。
 
-使い方:
+Usage:
     manage.py (drive) [--model=<model>] [--js] [--chaos]
     manage.py (train) [--tub=<tub1,tub2,..tubn>]  (--model=<model>) [--base_model=<base_model>] [--no_cache]
 
-オプション:
+Options:
     -h --help        使い方を表示。
     --tub TUBPATHS   tubファイルが格納されているディレクトリへのパスを指定する。カンマ区切り指定可能。"~/tubs/*"といったワイルドカード指定も可能。
     --js             ジョイスティックを使用する。
