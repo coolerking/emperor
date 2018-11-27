@@ -81,13 +81,14 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
         #from donkeypart_ps3_controller.part import PS4JoystickController
         #ctr = PS4JoystickController(
         # ELECOM JC-U3912T ジョイスティックコントローラを使用
-        from parts.elecom import JC_U3912T_JoystickController
-        ctr = JC_U3912T_JoystickController(
-
-                                 throttle_scale=cfg.JOYSTICK_MAX_THROTTLE,
-                                 steering_scale=cfg.JOYSTICK_STEERING_SCALE,
-                                # throttle_axis=cfg.JOYSTICK_THROTTLE_AXIS,
-                                 auto_record_on_throttle=cfg.AUTO_RECORD_ON_THROTTLE)
+        #from parts.elecom import JC_U3912T_JoystickController
+        #ctr = JC_U3912T_JoystickController(
+        #                         throttle_scale=cfg.JOYSTICK_MAX_THROTTLE,
+        #                         steering_scale=cfg.JOYSTICK_STEERING_SCALE,
+        #                        # throttle_axis=cfg.JOYSTICK_THROTTLE_AXIS,
+        #                         auto_record_on_throttle=cfg.AUTO_RECORD_ON_THROTTLE)
+        from parts.bt_elecom import JC_U3912T_JoystickController
+        ctl = JC_U3912T_JoystickController(config_path='part/jc-u3912t.yml')
     else:
         # ステアリング、スロットル、モードなどを管理するWebサーバを作成する
         # Web Controller part の生成
