@@ -205,7 +205,7 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
 
 ## 実行
 
-1. キャリブレーション
+### キャリブレーション
 
    スロットル、ステアリングの調整を以下のコマンドで行い、取得した値を `config.py` に書き込みます。
 
@@ -222,7 +222,7 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
      donkey calibrate --channel 1
      ```
 
-2. 手動運転(データ収集)
+### 手動運転(データ収集)
 
    以下の手順で手動運転を行い、学習データ(tubデータ)を `data` ディレクトリに収集します。
 
@@ -238,7 +238,7 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
       python manage.py drive --js
       ```
 
-3. トレーニング
+### トレーニング
 
    トレーニングは Raspberry Pi上ではなく、PC等で実行します。
    `emperor/data` ディレクトリをトレーニングを実行するノードへコピーし、`python manage.py --tub <tubデータディレクトリ> --model models/mypylot` を実行します。
@@ -247,17 +247,53 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
 
    上記コマンドを実行すると、`mypilot`が新たに作成されるので、これを Raspberry Pi 側の `emperor/models` ディレクトリにコピーします。
 
-4. 自動運転
+#### FloydHub 上でトレーニング
 
-   以下の手順で自動運転を実行します。
+デフォルトのモデルは畳み込み層が4つと比較的少ないモデルであるため、PCでもトレーニングは可能ですが、
+今後多層モデルやファインチューニングなどを行う場合はGPUリソースが必要になる場合があります。
+
+以下の手順は有料機械学習PaaS [FloydHub](https://www.floydhub.com/) をつかったトレーニング例です。
+
+1. FloydHub アカウントを作成
+2. FloydHub サイト上でデータセットを作成
+3. ローカルPC上に floid-cli コマンドをインストール
    ```bash
-   git clone https://github.com/autorope/donkeypart_ps3_controller.git
-   cd donkeypart_ps3_controller
-   pip install -e .
-   cd ..
-   cd emperor
-   python manage.py drive --model models/mypilot
+   pip install floyd-cli
    ```
+4. ローカルPCのコマンドラインから、FloydHub へログイン
+   ```bash
+   floyd login
+   ```
+   ユーザID・パスワードでログインする場合
+   ```bash
+   floyd login -u xxxx@xxx.com -p hogehoge
+   ```
+5. tubデータをアップロード
+   ```bash
+   cd ~/mycar/tub
+   floyd data init emp_20YYMMDD
+   ```
+6. `floyd.xml`のデータセット指定部分を編集
+   ```yml
+       input:
+      - source: hogehoge/datasets/emp_20YYMMDD/1
+        destination: data
+    ```
+6. トレーニングジョブをキック
+   ```bash
+   floyd run --task train
+   ```
+7. ジョブが終わったら、`mypilot` をダウンロード
+
+
+
+### 自動運転
+
+`models/mypilot` に配置した際の自動運転実行例です。
+
+```bash
+python manage.py drive --model models/mypilot
+```
 
 
 
