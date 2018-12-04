@@ -9,9 +9,7 @@ cd donkeypart_bluetooth_game_controller
 pip install -e .
 
 各ボタン/各axisにどの機能が割り振られているかは、
-コントロールクラス JC_U3912T_JoystickController の self.func_map を参照のこと。
-
-Author: Tasuku Hori, facebook.com/hori.tasuku
+コントロールクラス JoystickController の self.func_map を参照のこと。
 """
 import time
 import evdev
@@ -19,7 +17,7 @@ from evdev import ecodes
 
 from donkeypart_bluetooth_game_controller import BluetoothGameController
 
-class JC_U3912T_JoystickController(BluetoothGameController):
+class JoystickController(BluetoothGameController):
     '''
     JC-U3912T ゲームパッド用コントローラクラス。
     manage.pyを編集し、ジョイスティックコントローラとして本コントローラをimportし
@@ -28,8 +26,8 @@ class JC_U3912T_JoystickController(BluetoothGameController):
     '''
     def __init__(self, 
         event_input_device=None, 
-        config_path='part/jc-u3912t.yml', 
-        device_search_term='smart jc-u3912t', 
+        config_path=None, 
+        device_search_term=None, 
         verbose=False):
         '''
         コンストラクタ。
@@ -38,13 +36,19 @@ class JC_U3912T_JoystickController(BluetoothGameController):
 
         引数
             event_input_device    イベントキャラクタデバイスのInputDeviceオブジェクト(デフォルトNone→device_search_termで検索する)
-            config_path           設定ファイルパス(デフォルト'part/jc-u3912t.yml')
-            device_search_term    検索対象文字列(デフォルト'smart jc-u3912t')
+            config_path           設定ファイルパス(デフォルトNone)
+            device_search_term    検索対象文字列(デフォルトNone)
             verbose               デバッグモード(デフォルトFalse)
         戻り値
             なし
         '''
-        super(JC_U3912T_JoystickController, self).__init__(
+        # デフォルト値の設定
+        if config_path:
+            config_path = 'elecom/jc_u3912t.yml'
+        if device_search_term:
+            device_search_term = 'smart jc-u3912t'
+
+        super(JoystickController, self).__init__(
             event_input_device=event_input_device, 
             config_path=config_path, 
             device_search_term=device_search_term, 
@@ -129,6 +133,7 @@ class JC_U3912T_JoystickController(BluetoothGameController):
             else:
                 if self.verbose:
                     print('unknown type: ', event.type)
+                    print('code: [', event.code,  '] val:[', event.value, '] type:[', event.type, ']')
                 # ボタン名, 値ともにNoneを返却
                 return None, None
 

@@ -1,2 +1,9 @@
-models/
-tub/
+tub/*
+data/*
+logs/*
+models/*
+.git
+*.jpg
+*.mp4
+*.zip
+*.png
