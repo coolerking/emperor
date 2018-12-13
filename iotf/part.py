@@ -163,12 +163,27 @@ class IoTFSubBase(LogBase):
         self.debug('[disconnect] disconnected client')
 
 class PubTelemetry(IoTFPubBase):
-    def __init__(self, dev_conf_path, logger=None):
+    def __init__(self, dev_conf_path, drive_loop_hz=20, logger=None):
+        """
+        ログ出力準備を行い、設定ファイルを読み込みMQTTクライアントの接続を確立する。
+
+        引数
+            dev_conf_path   設定ファイルへのパス
+            drive_loop_hz   1秒間に実行される回数
+            logger          ロガーオブジェクト
+        戻り値
+            なし
+        """
         if logger is None:
             logger = logging.getLogger('PubTelemetry')
             logger.setLevel(10)
             logger.addHandler(logging.StreamHandler())
         super().__init__(dev_conf_path, logger)
+        self.throttle = 1.0
+        self.angle = 1.0
+        self.delta = 0.005
+        self.count = 0
+        self.drive_loop_hz = drive_loop_hz
         self.debug('[__init__] end')
 
     def run(self, throttle=0.0, angle=0.0):
@@ -180,12 +195,31 @@ class PubTelemetry(IoTFPubBase):
         戻り値
             なし
         """
+        # 約1秒に1回実行
+        self.count = self.count + 1
+        if self.count <= self.drive_loop_hz:
+            #self.debug('[run] ignnore data, very often sending')
+            return
+        else:
+            self.count = 0
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
+            self.debug('[run] ignnore data, throttle delta is small')
+            self.throttle = throttle
+            self.angle = angle
+            return
+        elif abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.debug('[run] ignnore data, throttle delta is small')
+            self.throttle = throttle
+            self.angle = angle
+            return
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
             "timestamp": datetime.datetime.now().isoformat()
         }
         self.publish(msg_dict=msg_dict)
+        self.throttle = throttle
+        self.angle = angle
         self.debug('[run] publish :' + json.dumps(msg_dict))
     
     def shutdown(self):

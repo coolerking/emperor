@@ -239,12 +239,13 @@ class PubTelemetry(MosqPubBase):
     """
     スロットル、アングル値をMQTTブローカへPublishするPubTelemetryクラス。
     """
-    def __init__(self, conf_path, logger=None):
+    def __init__(self, conf_path, drive_loop_hz=20, logger=None):
         """
         設定ファイルを読み込み、MQTTクライアントを生成、接続する。
 
         引数
             config_path     設定ファイルのパス
+            drive_loop_hz   実行間隔
             logger          ロガーオブジェクト
         戻り値
             なし
@@ -254,17 +255,39 @@ class PubTelemetry(MosqPubBase):
             logger.setLevel(10)
             logger.addHandler(logging.StreamHandler())
         super().__init__(conf_path, logger)
+        self.throttle = 1.0
+        self.angle = 1.0
+        self.delta = 0.005
+        self.count = 0
+        self.drive_loop_hz = drive_loop_hz
         self.debug('[__init__] end')
 
     def run(self, throttle=0.0, angle=0.0):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
+        ほぼ1秒に1回に実行する。
         引数
             throttle    スロットル値
             angle       アングル値
         戻り値
             なし
         """
+        self.count = self.count + 1
+        if self.count <= self.drive_loop_hz:
+            #self.debug('[run] ignore data because very often sending')
+            return
+        else:
+            self.count = 0
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
+            self.debug('[run] ignore data because throttle({}) delta is small'.format(str(throttle)))
+            self.throttle = throttle
+            self.angle = angle
+            return
+        elif abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.debug('[run] ignore data because angle({}) delta is small'.format(str(angle)))
+            self.throttle = throttle
+            self.angle = angle
+            return
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
@@ -272,7 +295,9 @@ class PubTelemetry(MosqPubBase):
         }
         self.publish(msg_dict=msg_dict)
         self.debug('[run] publish :' + json.dumps(msg_dict))
-    
+        self.throttle = throttle
+        self.angle = angle
+
     def shutdown(self):
         """
         MQTTクライアント接続を解除する。

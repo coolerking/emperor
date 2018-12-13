@@ -239,7 +239,7 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
 
     # テレメトリーデータの送信
     # IoTP
-    tele = PubTelemetry('iotf/emperor.ini')
+    tele = PubTelemetry('iotf/emperor.ini', drive_loop_hz=cfg.DRIVE_LOOP_HZ)
     # eclipse-mosquitto
     #tele = PubTelemetry('mosq/emperor.yaml')
     V.add(tele, inputs=['throttle', 'angle'])
