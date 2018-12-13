@@ -25,6 +25,9 @@ from donkeycar.parts.datastore import TubGroup, TubWriter
 from donkeycar.parts.web_controller import LocalWebController
 from donkeycar.parts.clock import Timestamp
 
+# テレメトリデータ送信クラスのインポート
+from iotf.part import PubTelemetry
+from iotf.part import PubTelemetry
 
 def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
     """
@@ -232,6 +235,14 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
     #     'user/mode'          Web/Joystickにより手動指定した次に取るべきUserモード(入力なしの場合は前回値のまま)
     #     'timestamp'          現在時刻
     V.add(tub, inputs=inputs, run_condition='recording')
+
+
+    # テレメトリーデータの送信
+    # IoTP
+    tele = PubTelemetry('iotf/emperor.ini')
+    # eclipse-mosquitto
+    #tele = PubTelemetry('mosq/emperor.yaml')
+    V.add(tele, inputs=['throttle', 'angle'])
 
     # Vehicle ループを開始
     V.start(rate_hz=cfg.DRIVE_LOOP_HZ,
