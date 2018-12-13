@@ -53,7 +53,7 @@ class IoTFPubBase(LogBase):
     """
     IBM Watson IoT Platform をMQTTブローカとして使用するPublisher基底クラス。
     """
-    def __init__(self, dev_conf_path, logger):
+    def __init__(self, dev_conf_path, logger=None):
         """
         設定ファイルからデバイス情報を読み込み、MQTTブローカへ接続する。
 
@@ -63,7 +63,11 @@ class IoTFPubBase(LogBase):
         戻り値
             なし
         """
-        super().__init__(self.logger)
+        if logger is None:
+            logger = logging.getLogger('IoTFPubBase')
+            logger.setLevel(10)
+            logger.addHandler(logging.StreamHandler())
+        super().__init__(logger)
         self.debug('[__init__] start dev_conf_path={}'.format(dev_conf_path))
 
         try:
@@ -94,7 +98,7 @@ class IoTFSubBase(LogBase):
     """
     IBM Watson IoT Platform をMQTTブローカとして使用するSubscriber基底クラス。
     """
-    def __init__(self, dev_conf_path, app_conf_path, logger):
+    def __init__(self, dev_conf_path, app_conf_path, logger=None):
         """
         設定ファイルからアプリケーションを読み込み、MQTTブローカへ接続する。
         デバイス設定ファイルは、購読元デバイス情報を入手するために読み込んでいる。
@@ -106,6 +110,10 @@ class IoTFSubBase(LogBase):
         戻り値
             なし
         """
+        if logger is None:
+            logger = logging.getLogger('IoTFSubBase')
+            logger.setLevel(10)
+            logger.addHandler(logging.StreamHandler())
         super().__init__(logger)
         self.debug('[__init__] start dev_conf_path={}, app_conf_path={}'.format(
             dev_conf_path, app_conf_path))
