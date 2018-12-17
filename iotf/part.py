@@ -183,13 +183,8 @@ class PubTelemetry(IoTFPubBase):
             return
         else:
             self.count = 0
-        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
-            self.log('[run] ignnore data, throttle delta is small')
-            self.throttle = throttle
-            self.angle = angle
-            return
-        elif abs(abs(angle) - abs(self.angle)) < self.delta:
-            self.log('[run] ignnore data, angle delta is small')
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta and abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.log('[run] ignnore data, delta is small')
             self.throttle = throttle
             self.angle = angle
             return
