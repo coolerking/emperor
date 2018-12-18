@@ -115,7 +115,7 @@ class MosqPubBase(ConfigBase):
         self.log("[__init__] connect client host:" + self.host + ', port:' + str(self.port))
 
 
-    def publish(self, msg_dict={}):
+    def publishJson(self, msg_dict={}):
         """
         引数msg_dictで与えられた辞書をJSONデータ化してpublish処理を実行する。
 
@@ -127,7 +127,33 @@ class MosqPubBase(ConfigBase):
         self.log('[publish] start msg_dict={}'.format(json.dumps(msg_dict)))
         self.client.publish(self.pub_topic, json.dumps(msg_dict))
         self.log('[publish] published topic:' + self.pub_topic)
-    
+
+    def publishText(self, msg_text=None):
+        """
+        テキストデータのpublish処理を実行する。
+
+        引数
+            msg_text    送信メッセージ（テキスト）
+        戻り値
+            なし
+        """
+        self.log('[publishText] start msg_text={}'.format(msg_text))
+        self.client.publish(self.pub_topic, msg_text)
+        self.log('[publishText] published topic:' + self.pub_topic)
+
+    def publishBin(self, msg_bin=None):
+        """
+        引数msg_binで与えられた辞書をJSONデータ化してpublish処理を実行する。
+
+        引数
+            msg_bin    送信メッセージ（バイナリ）
+        戻り値
+            なし
+        """
+        self.log('[publishBin] start msg_bin')
+        self.client.publish(self.pub_topic, msg_bin)
+        self.log('[publishBin] published topic:' + self.pub_topic)
+
     def disconnect(self):
         """
         接続を解除する。
@@ -220,7 +246,7 @@ class PubTelemetry(MosqPubBase):
     """
     スロットル、アングル値をMQTTブローカへPublishするPubTelemetryクラス。
     """
-    def __init__(self, conf_path, tub_dir, pub_count=2000, debug=False):
+    def __init__(self, conf_path, pub_count=2000, debug=False):
         """
         設定ファイルを読み込み、MQTTクライアントを生成、接続する。
 
@@ -238,10 +264,6 @@ class PubTelemetry(MosqPubBase):
         self.delta = 0.005
         self.count = 0
         self.pub_count = pub_count
-        self.tub_dir = os.path.expanduser(tub_dir)
-        self.image_array = None
-        if not os.path.exists(self.tub_dir) or not os.path.isdir(self.tub_dir):
-            raise Exception('tub_dir={} not exists or not isdir'.format(tub_dir))
         self.log('[__init__] end')
 
     def run(self, throttle, angle, image_filename):
@@ -250,7 +272,6 @@ class PubTelemetry(MosqPubBase):
         引数
             throttle        スロットル値
             angle           アングル値
-            image_filename  イメージデータのファイル名（ディレクトリパスなし）
         戻り値
             なし
         """
@@ -267,27 +288,16 @@ class PubTelemetry(MosqPubBase):
             self.angle = angle
             return
 
-        self.log('[run] image_filename=' + image_filename)
-        image_path = os.path.join(self.tub_dir, image_filename)
-        if not os.path.exists(image_path) or not os.path.isfile(image_path):
-            self.log('[run] {} is not exists or is not a file'.format(image_filename))
-            image_array = self.image_array
-        else:
-            with open(image_path, 'r') as f:
-                image_array = bytearray(f.read())
-
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
-            "cam/image_array": image_array,
             "timestamp": datetime.datetime.now().isoformat()
         }
-        self.publish(msg_dict=msg_dict)
+        self.publishJson(msg_dict=msg_dict)
 
         self.log('[run] publish :' + json.dumps(msg_dict))
         self.throttle = throttle
         self.angle = angle
-        self.image_array = image_array
 
     def shutdown(self):
         """
@@ -300,6 +310,7 @@ class PubTelemetry(MosqPubBase):
         """
         self.disconnect()
         self.log('[shutdown] disconnect client')
+
 
 class SubPilot(MosqSubBase):
     """

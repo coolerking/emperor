@@ -58,7 +58,7 @@ class IoTFPubBase(LogBase):
             なし
         """
         super().__init__(debug)
-        self.log('[__init__] start dev_conf_path={}'.format(dev_conf_path))
+        self.log('[__init__] start dev_conf_path={}, msgFormat'.format(dev_conf_path))
 
         try:
             dev_options = ibmiotf.device.ParseConfigFile(dev_conf_path)
@@ -72,12 +72,75 @@ class IoTFPubBase(LogBase):
         self.client.connect()
         self.log('[__init__] connect client')
 
+    def publishBinEvent(self, event='status', msg_bin=None, qos=0):
+        """
+        バイナリデータをイベントステータスでpublishする。
+        引数 msg_text は、本メソッド内部で UTF-8 にエンコードしてpublishされる。
 
-    def publish(self, event='status', msg_dict={}, qos=0):
-        self.log('[publish] start event={}, msg_dict={}, qos={}'.format(
+        引数
+            event       イベント名
+            msg_text    データ（文字列型）
+            qos         QoSレベル
+        戻り値
+            なし
+        """
+        self.log('[publishBinEvent] start event={}, qos={}'.format(
+            event, str(qos)))
+        self.publishEvent(event=event, data=msg_bin, msgFormat='bin', qos=qos)
+
+    def publishTextEvent(self, event='status', msg_text='', qos=0):
+        """
+        テキストデータをイベントステータスでpublishする。
+        引数 msg_text は、本メソッド内部で UTF-8 にエンコードしてpublishされる。
+
+        引数
+            event       イベント名
+            msg_text    データ（文字列型）
+            qos         QoSレベル
+        戻り値
+            なし
+        """
+        self.log('[publishTextEvent] start event={}, msg_text={}, qos={}'.format(
+            event, msg_text, str(qos)))
+        self.publishEvent(event=event, data=msg_text.encode('utf-8'), msgFormat='text', qos=qos)
+
+    def publishJsonEvent(self, event='status', msg_dict={}, qos=0):
+        """
+        JSON型式データをイベントステータスでpublishする。
+        JSON は、Watson IoT Platform の標準形式である。
+        組み込みの Watson IoT Platform ダッシュボードを使用する予定の場合は、
+        メッセージ・ペイロード・フォーマットが整形式 JSON テキストに準拠していること
+        を確認すること。
+
+        引数
+            event       イベント名
+            msg_dict    データ（辞書型）
+            qos         QoSレベル
+        戻り値
+            なし
+        """
+        self.log('[publishJsonEvent] start event={}, msg_dict={}, qos={}'.format(
             event, str(msg_dict), str(qos)))
-        self.client.publishEvent(event=event, msgFormat='json', data=msg_dict, qos=0)
-        self.log('[publish] published')
+        self.publishEvent(event=event, data=msg_dict, msgFormat='json', qos=qos)
+    
+    def publishEvent(self, event, data, msgFormat, qos):
+        """
+        イベントステータスでpublishする。
+        Watson IoT Platform のペイロードの最大サイズは、131072 バイトであり、これを超えた
+        場合は拒否される。
+
+        引数
+            event       イベント名
+            data        データ
+            msgFormat   データフォーマット（json/text/bin）
+            qos         QoSレベル
+        戻り値
+            なし
+        """
+        self.log('[publishEvent] event={}, megFormat={}, len(data)={}, qos={}'.format(
+            event, msgFormat, str(len(data)), str(qos)))
+        self.client.publishEvent(event=event, msgFormat=msgFormat, data=data, qos=qos)
+        self.log('[publishJson] published')
     
     def disconnect(self):
         self.client.disconnect()
@@ -88,7 +151,7 @@ class IoTFSubBase(LogBase):
     """
     IBM Watson IoT Platform をMQTTブローカとして使用するSubscriber基底クラス。
     """
-    def __init__(self, dev_conf_path, app_conf_path, debug=False):
+    def __init__(self, dev_conf_path, app_conf_path, msgFormat='json', debug=False):
         """
         設定ファイルからアプリケーションを読み込み、MQTTブローカへ接続する。
         デバイス設定ファイルは、購読元デバイス情報を入手するために読み込んでいる。
@@ -96,6 +159,7 @@ class IoTFSubBase(LogBase):
         引数
             dev_conf_path   デバイス設定ファイルのパス
             app_conf_path   アプリケーション設定ファイルのパス
+            msgFormat       メッセージフォーマット(json/text/bin)
             debug           デバッグフラグ
         戻り値
             なし
@@ -103,6 +167,8 @@ class IoTFSubBase(LogBase):
         super().__init__(debug)
         self.log('[__init__] start dev_conf_path={}, app_conf_path={}'.format(
             dev_conf_path, app_conf_path))
+        self.msgFormat = msgFormat
+        self.log('[__init__] msgFormat=' + msgFormat)
 
         try:
             # 送信元情報の入手
@@ -136,9 +202,9 @@ class IoTFSubBase(LogBase):
                 self.dev_type, self.dev_id))
         else:
             self.client.subscribeToDeviceEvents(
-                deviceType=self.dev_type, deviceId=self.dev_id, event=event, msgFormat='json')
-            self.log('[subscribe] subscribe dev_type={}, dev_id={}, event={}, format=json'.format(
-                self.dev_type, self.dev_id, event))
+                deviceType=self.dev_type, deviceId=self.dev_id, event=event, msgFormat=self.msgFormat)
+            self.log('[subscribe] subscribe dev_type={}, dev_id={}, event={}, format={}'.format(
+                self.dev_type, self.dev_id, event, self.msgFormat))
 
     def _on_subscribe(self, event):
       str = "[on_subscribe] %s event '%s' received from device [%s]: %s"
@@ -169,16 +235,14 @@ class PubTelemetry(IoTFPubBase):
         self.delta = 0.005
         self.count = 0
         self.pub_count = abs(pub_count)
-        self.image_array = None
         self.log('[__init__] end')
 
-    def run(self, throttle, angle, image_array):
+    def run(self, throttle, angle):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
         引数
             throttle        スロットル値
             angle           アングル値
-            image_array     イメージデータ（np.ndarray型式）
         戻り値
             なし
         """
@@ -195,33 +259,54 @@ class PubTelemetry(IoTFPubBase):
             self.throttle = throttle
             self.angle = angle
             return
-        self.log('[run] type')
-        self.log(type(image_array))
-        self.log('[run] dtype')
-        self.log(image_array.dtype)
-        self.log('[run] nbytes')
-        self.log(image_array.nbytes)
-        self.log('[run] shape')
-        self.log(image_array.shape)
-        self.log('[run] tostring()')
-        self.log(image_array.tostring())
+
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
-            "cam/image_array": image_array.tostring(), #numpy行列からバイトデータに変換
             "timestamp": datetime.datetime.now().isoformat()
         }
 
-        self.publish(msg_dict=msg_dict)
+        self.publishJsonEvent(msg_dict=msg_dict)
         self.throttle = throttle
         self.angle = angle
-        self.image_array = image_array
         self.log('[run] publish :' + json.dumps(msg_dict))
     
     def shutdown(self):
         self.disconnect()
         self.log('[shutdown] disconnect client')
 
+class PubImage(IoTFPubBase):
+    """
+    イメージデータを送信する。
+    """
+    def __init__(self, dev_conf_path, pub_count=1000, debug=False):
+        """
+        ログ出力準備を行い、設定ファイルを読み込みMQTTクライアントの接続を確立する。
+
+        引数
+            dev_conf_path   設定ファイルへのパス
+            pub_count       publishが実行される間隔
+            debug           デバッグフラグ
+        戻り値
+            なし
+        """
+        super().__init__(dev_conf_path, debug)
+        self.log('[__init__] end')
+
+    def run(self, image_array):
+        """
+        イメージデータをMQTTブローカへ送信する。
+        引数
+            image_array    イメージデータ（バイナリ）
+        戻り値
+            なし
+        """
+        self.publishBinEvent(msg_bin=image_array)
+        self.log('[run] publish bin message')
+    
+    def shutdown(self):
+        self.disconnect()
+        self.log('[shutdown] disconnect client')
 
 class SubPilot(IoTFSubBase):
     """
