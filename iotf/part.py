@@ -169,7 +169,6 @@ class PubTelemetry(IoTFPubBase):
         self.delta = 0.005
         self.count = 0
         self.pub_count = abs(pub_count)
-        self.tub_dir = os.path.expanduser(tub_dir)
         self.image_array = None
         self.log('[__init__] end')
 
