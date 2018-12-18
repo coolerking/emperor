@@ -301,7 +301,9 @@ class PubImage(IoTFPubBase):
         戻り値
             なし
         """
-        self.publishBinEvent(msg_bin=image_array)
+        self.log('[run] convert ndarray to list')
+        msg_bin = image_array.tolist()
+        self.publishBinEvent(msg_bin=msg_bin)
         self.log('[run] publish bin message')
     
     def shutdown(self):
