@@ -12,7 +12,7 @@ import os
 import json
 import numpy as np
 import logging
-import datetime
+#import datetime
 from ibmiotf import MessageCodec, Message, InvalidEventException
 import ibmiotf.device
 import ibmiotf.application
@@ -255,7 +255,7 @@ class PubTelemetry(IoTFPubBase):
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
-            "timestamp": datetime.datetime.now().isoformat()
+            "timestamp": datetime.now().isoformat()
         }
 
         self.publishJsonEvent(msg_dict=msg_dict)
@@ -366,7 +366,7 @@ class SubPilot(IoTFSubBase):
         super().__init__(dev_conf_path, app_conf_path, debug)
         self.throttle = 0.0
         self.angle = 0.0
-        self.timestamp = datetime.datetime.now().isoformat()
+        self.timestamp = datetime.now().isoformat()
         self.log('[__init__] end')
 
     def on_subscribe(self, event):
