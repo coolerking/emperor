@@ -90,7 +90,7 @@ class IoTFPubBase(LogBase):
         戻り値
             なし
         """
-        self.log('[publishTextEvent] start event={}, msg_bin={}, qos={}'.format(
+        self.log('[publishImageEvent] start event={}, msg_bin={}, qos={}'.format(
             event, str(msg_bin), str(qos)))
         self.publishEvent(event=event, data=msg_bin, msgFormat='image', qos=qos)
 
