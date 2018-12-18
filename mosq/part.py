@@ -239,6 +239,7 @@ class PubTelemetry(MosqPubBase):
         self.count = 0
         self.pub_count = pub_count
         self.tub_dir = os.path.expanduser(tub_dir)
+        self.image_array = None
         if not os.path.exists(self.tub_dir) or not os.path.isdir(self.tub_dir):
             raise Exception('tub_dir={} not exists or not isdir'.format(tub_dir))
         self.log('[__init__] end')
@@ -259,20 +260,22 @@ class PubTelemetry(MosqPubBase):
             return
         else:
             self.count = 0
-        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
-            self.log('[run] ignore data because throttle({}) delta is small'.format(str(throttle)))
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta and abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.log('[run] ignnore data, delta is small th:[{}, {}] an[{}, {}]'.format(
+                str(throttle), str(self.throttle), str(angle), str(self.angle)))
             self.throttle = throttle
             self.angle = angle
             return
-        elif abs(abs(angle) - abs(self.angle)) < self.delta:
-            self.log('[run] ignore data because angle({}) delta is small'.format(str(angle)))
-            self.throttle = throttle
-            self.angle = angle
-            return
+
         self.log('[run] image_filename=' + image_filename)
         image_path = os.path.join(self.tub_dir, image_filename)
-        with open(image_path, 'r') as f:
-            image_array = bytearray(f.read())
+        if not os.path.exists(image_path) or not os.path.isfile(image_path):
+            self.log('[run] {} is not exists or is not a file'.format(image_filename))
+            image_array = self.image_array
+        else:
+            with open(image_path, 'r') as f:
+                image_array = bytearray(f.read())
+
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
@@ -280,9 +283,11 @@ class PubTelemetry(MosqPubBase):
             "timestamp": datetime.datetime.now().isoformat()
         }
         self.publish(msg_dict=msg_dict)
+
         self.log('[run] publish :' + json.dumps(msg_dict))
         self.throttle = throttle
         self.angle = angle
+        self.image_array = image_array
 
     def shutdown(self):
         """

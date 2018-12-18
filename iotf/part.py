@@ -192,13 +192,9 @@ class PubTelemetry(IoTFPubBase):
             return
         else:
             self.count = 0
-        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
-            self.log('[run] ignnore data, throttle delta is small')
-            self.throttle = throttle
-            self.angle = angle
-            return
-        elif abs(abs(angle) - abs(self.angle)) < self.delta:
-            self.log('[run] ignnore data, angle delta is small')
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta and abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.log('[run] ignnore data, delta is small th:[{}, {}] an[{}, {}]'.format(
+                str(throttle), str(self.throttle), str(angle), str(self.angle)))
             self.throttle = throttle
             self.angle = angle
             return
@@ -211,6 +207,7 @@ class PubTelemetry(IoTFPubBase):
         else:
             with open(image_path, 'r') as f:
                 image_array = bytearray(f.read())
+
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
