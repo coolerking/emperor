@@ -220,12 +220,13 @@ class PubTelemetry(MosqPubBase):
     """
     スロットル、アングル値をMQTTブローカへPublishするPubTelemetryクラス。
     """
-    def __init__(self, conf_path, pub_count=2000, debug=False):
+    def __init__(self, conf_path, tub_dir, pub_count=2000, debug=False):
         """
         設定ファイルを読み込み、MQTTクライアントを生成、接続する。
 
         引数
             config_path     設定ファイルのパス
+            tub_dir         tubディレクトリのパス
             pub_count       publish実行間隔
             debug           デバッグフラグ
         戻り値
@@ -237,14 +238,18 @@ class PubTelemetry(MosqPubBase):
         self.delta = 0.005
         self.count = 0
         self.pub_count = pub_count
+        self.tub_dir = os.path.expanduser(tub_dir)
+        if not os.path.exists(self.tub_dir) or not os.path.isdir(self.tub_dir):
+            raise Exception('tub_dir={} not exists or not isdir'.format(tub_dir))
         self.log('[__init__] end')
 
-    def run(self, throttle=0.0, angle=0.0):
+    def run(self, throttle, angle, image_filename):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
         引数
-            throttle    スロットル値
-            angle       アングル値
+            throttle        スロットル値
+            angle           アングル値
+            image_filename  イメージデータのファイル名（ディレクトリパスなし）
         戻り値
             なし
         """
@@ -264,9 +269,14 @@ class PubTelemetry(MosqPubBase):
             self.throttle = throttle
             self.angle = angle
             return
+        self.log('[run] image_filename=' + image_filename)
+        image_path = os.path.join(self.tub_dir, image_filename)
+        with open(image_path, 'r') as f:
+            image_array = bytearray(f.read())
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
+            "cam/image_array": image_array,
             "timestamp": datetime.datetime.now().isoformat()
         }
         self.publish(msg_dict=msg_dict)

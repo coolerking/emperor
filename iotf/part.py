@@ -8,6 +8,7 @@ ibmiotf パッケージをインストールする必要がある。
 pip install ibmiotf
 """
 
+import os
 import json
 import logging
 import datetime
@@ -148,7 +149,10 @@ class IoTFSubBase(LogBase):
         self.log('[disconnect] disconnected client')
 
 class PubTelemetry(IoTFPubBase):
-    def __init__(self, dev_conf_path, pub_count=1000, debug=False):
+    """
+    テレメトリデータを送信する。
+    """
+    def __init__(self, dev_conf_path, tub_dir, pub_count=1000, debug=False):
         """
         ログ出力準備を行い、設定ファイルを読み込みMQTTクライアントの接続を確立する。
 
@@ -165,14 +169,19 @@ class PubTelemetry(IoTFPubBase):
         self.delta = 0.005
         self.count = 0
         self.pub_count = abs(pub_count)
+        self.tub_dir = os.path.expanduser(tub_dir)
+        self.image_array = None
+        if not os.path.exists(self.tub_dir) or not os.path.isdir(self.tub_dir):
+            raise Exception('tub_dir={} not exists or not isdir'.format(tub_dir))
         self.log('[__init__] end')
 
-    def run(self, throttle=0.0, angle=0.0):
+    def run(self, throttle, angle, image_filename):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
         引数
-            throttle    スロットル値
-            angle       アングル値
+            throttle        スロットル値
+            angle           アングル値
+            image_filename  イメージデータのファイル名（ディレクトリなし）
         戻り値
             なし
         """
@@ -183,27 +192,58 @@ class PubTelemetry(IoTFPubBase):
             return
         else:
             self.count = 0
-        if abs(abs(throttle) - abs(self.throttle)) < self.delta and abs(abs(angle) - abs(self.angle)) < self.delta:
-            self.log('[run] ignnore data, delta is small')
+        if abs(abs(throttle) - abs(self.throttle)) < self.delta:
+            self.log('[run] ignnore data, throttle delta is small')
             self.throttle = throttle
             self.angle = angle
             return
+        elif abs(abs(angle) - abs(self.angle)) < self.delta:
+            self.log('[run] ignnore data, angle delta is small')
+            self.throttle = throttle
+            self.angle = angle
+            return
+        
+        self.log('[run] image_filename=' + image_filename)
+        image_path = os.path.join(self.tub_dir, image_filename)
+        if not os.path.exists(image_path) or not os.path.isfile(image_path):
+            self.log('[run] {} is not exists or is not a file'.format(image_filename))
+            image_array = self.image_array
+        else:
+            with open(image_path, 'r') as f:
+                image_array = bytearray(f.read())
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
+            "cam/image_array": image_array,
             "timestamp": datetime.datetime.now().isoformat()
         }
+
         self.publish(msg_dict=msg_dict)
         self.throttle = throttle
         self.angle = angle
+        self.image_array = image_array
         self.log('[run] publish :' + json.dumps(msg_dict))
     
     def shutdown(self):
         self.disconnect()
         self.log('[shutdown] disconnect client')
 
+
 class SubPilot(IoTFSubBase):
+    """
+    外部オートパイロットから次のスロットル値、アングル値を取得する。
+    """
     def __init__(self, dev_conf_path, app_conf_path, debug=False):
+        """
+        MQTT通信の準備を行い、インスタンス変数を初期化する。
+
+        引数
+            dev_conf_path   デバイス側設定ファイル
+            app_conf_path   アプリケーション側設定ファイル
+            debug           デバッグモード
+        戻り値
+            なし
+        """
         super().__init__(dev_conf_path, app_conf_path, debug)
         self.throttle = 0.0
         self.angle = 0.0
@@ -211,6 +251,15 @@ class SubPilot(IoTFSubBase):
         self.log('[__init__] end')
 
     def on_subscribe(self, event):
+        """
+        イベントデータ受信したとき、受領したスロットル値、アングル値を
+        インスタンス変数へ格納する。
+
+        引数
+            event       イベントデータ
+        戻り値
+            なし
+        """
         self.log('[on_subscribe] call at ' + event.timestamp.isoformat())
         self.log('[on_subscribe] event.data=' + json.dumps(event.data))
         self.throttle = float(event.data['throttle'])
@@ -218,6 +267,16 @@ class SubPilot(IoTFSubBase):
         self.timestamp = str(event.data['timestamp'])
     
     def run(self):
+        """
+        インスタンス変数として格納されているスロットル値、アングル値を返却する。
+
+        引数
+            なし
+        戻り値
+            throttle    スロットル値
+            angle       アングル値
+            timestamp   タイムスタンプ文字列
+        """
         self.log('[run] return throttle={}, angle={}, timestamp={}'.format(
             str(self.throttle), str(self.angle), str(self.timestamp)))
         return self.throttle, self.angle, self.timestamp
