@@ -152,7 +152,7 @@ class PubTelemetry(IoTFPubBase):
     """
     テレメトリデータを送信する。
     """
-    def __init__(self, dev_conf_path, tub_dir, pub_count=1000, debug=False):
+    def __init__(self, dev_conf_path, pub_count=1000, debug=False):
         """
         ログ出力準備を行い、設定ファイルを読み込みMQTTクライアントの接続を確立する。
 
@@ -171,17 +171,15 @@ class PubTelemetry(IoTFPubBase):
         self.pub_count = abs(pub_count)
         self.tub_dir = os.path.expanduser(tub_dir)
         self.image_array = None
-        if not os.path.exists(self.tub_dir) or not os.path.isdir(self.tub_dir):
-            raise Exception('tub_dir={} not exists or not isdir'.format(tub_dir))
         self.log('[__init__] end')
 
-    def run(self, throttle, angle, image_filename):
+    def run(self, throttle, angle, image_array):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
         引数
             throttle        スロットル値
             angle           アングル値
-            image_filename  イメージデータのファイル名（ディレクトリなし）
+            image_array     イメージデータ（np.ndarray型式）
         戻り値
             なし
         """
@@ -198,20 +196,20 @@ class PubTelemetry(IoTFPubBase):
             self.throttle = throttle
             self.angle = angle
             return
-        
-        self.log('[run] image_filename=' + image_filename)
-        image_path = os.path.join(self.tub_dir, image_filename)
-        if not os.path.exists(image_path) or not os.path.isfile(image_path):
-            self.log('[run] {} is not exists or is not a file'.format(image_filename))
-            image_array = self.image_array
-        else:
-            with open(image_path, 'r') as f:
-                image_array = bytearray(f.read())
-
+        self.log('[run] type')
+        self.log(type(image_array))
+        self.log('[run] dtype')
+        self.log(image_array.dtype)
+        self.log('[run] nbytes')
+        self.log(image_array.nbytes)
+        self.log('[run] shape')
+        self.log(image_array.shape)
+        self.log('[run] tostring()')
+        self.log(image_array.tostring())
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
-            "cam/image_array": image_array,
+            "cam/image_array": image_array.tostring(), #numpy行列からバイトデータに変換
             "timestamp": datetime.datetime.now().isoformat()
         }
 
