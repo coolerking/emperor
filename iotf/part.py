@@ -10,10 +10,14 @@ pip install ibmiotf
 
 import os
 import json
+import numpy as np
 import logging
 import datetime
+from ibmiotf import MessageCodec, Message, InvalidEventException
 import ibmiotf.device
 import ibmiotf.application
+import pytz
+from datetime import datetime
 
 class LogBase:
     """
@@ -65,6 +69,8 @@ class IoTFPubBase(LogBase):
             self.log('[__init__] dev config loaded options=' + str(dev_options))
             self.client = ibmiotf.device.Client(dev_options)
             self.log('[__init__] new client')
+            self.client.setMessageEncoderModule('image', ImageCodec)
+            self.log('[__init__] add image codec')
         except ibmiotf.ConnectionException  as e:
             self.log('[__init__] config load failed ' + dev_conf_path)
             raise e
@@ -72,23 +78,7 @@ class IoTFPubBase(LogBase):
         self.client.connect()
         self.log('[__init__] connect client')
 
-    def publishBinEvent(self, event='status', msg_bin=None, qos=0):
-        """
-        バイナリデータをイベントステータスでpublishする。
-        引数 msg_text は、本メソッド内部で UTF-8 にエンコードしてpublishされる。
-
-        引数
-            event       イベント名
-            msg_text    データ（文字列型）
-            qos         QoSレベル
-        戻り値
-            なし
-        """
-        self.log('[publishBinEvent] start event={}, qos={}'.format(
-            event, str(qos)))
-        self.publishEvent(event=event, data=msg_bin, msgFormat='bin', qos=qos)
-
-    def publishTextEvent(self, event='status', msg_text='', qos=0):
+    def publishImageEvent(self, event='status', msg_bin=None, qos=0):
         """
         テキストデータをイベントステータスでpublishする。
         引数 msg_text は、本メソッド内部で UTF-8 にエンコードしてpublishされる。
@@ -100,9 +90,9 @@ class IoTFPubBase(LogBase):
         戻り値
             なし
         """
-        self.log('[publishTextEvent] start event={}, msg_text={}, qos={}'.format(
-            event, msg_text, str(qos)))
-        self.publishEvent(event=event, data=msg_text.encode('utf-8'), msgFormat='text', qos=qos)
+        self.log('[publishTextEvent] start event={}, msg_bin={}, qos={}'.format(
+            event, str(msg_bin), str(qos)))
+        self.publishEvent(event=event, data=msg_bin, msgFormat='image', qos=qos)
 
     def publishJsonEvent(self, event='status', msg_dict={}, qos=0):
         """
@@ -132,7 +122,7 @@ class IoTFPubBase(LogBase):
         引数
             event       イベント名
             data        データ
-            msgFormat   データフォーマット（json/text/bin）
+            msgFormat   データフォーマット（json/image）
             qos         QoSレベル
         戻り値
             なし
@@ -182,6 +172,8 @@ class IoTFSubBase(LogBase):
             self.log('[__init__] app config loaded options=' + str(app_options))
             self.client = ibmiotf.application.Client(app_options)
             self.log('[__init__] new client')
+            self.client.setMessageEncoderModule('image', ImageCodec)
+            self.log('[__init__] add image codec')
         except ibmiotf.ConnectionException  as e:
             self.log('[__init__] config load failed ' + app_conf_path)
             raise e
@@ -302,13 +294,59 @@ class PubImage(IoTFPubBase):
             なし
         """
         #self.log('[run] convert ndarray to list')
-        msg_bin = image_array #.tolist()
-        self.publishBinEvent(msg_bin=msg_bin)
-        self.log('[run] publish bin message')
+        #msg_bin = image_array #.tolist()
+        self.publishImageEvent(msg_bin=image_array)
+        self.log('[run] publish image message')
     
     def shutdown(self):
         self.disconnect()
         self.log('[shutdown] disconnect client')
+
+
+class ImageCodec(MessageCodec):
+    """
+    フォーマット形式'image'に対応するCodecクラス。
+    
+      deviceCli.setMessageCodec("image", ImageCodec)
+    """
+    
+    @staticmethod
+    def encode(data=None, timestamp=None):
+        """
+        data を送信可能なデータに変換する。
+        dataは numpy.ndarray型式、各要素はuint8、全要素バイト数は57600、
+        型式は(120, 160, 3)。
+
+        引数
+            data        送信データ(np.ndarray型式)
+            timestamp   タイムスタンプ
+        戻り値
+            img         文字列化されたdata
+        """
+        img = data.tostring()
+        return img
+    
+    @staticmethod
+    def decode(message):
+        """
+        文字列をnp.ndarray型式に戻し型を(120, 160, 3)に戻す。
+
+        引数
+            message     受信メッセージ
+        戻り値
+            Messageオブジェクト
+        """
+        try:
+            data = message.payload.decode('utf-8')
+            data = np.fromstring(data, dtype=np.uint8)
+            data = np.reshape(data, (120, 160, 3))
+        except ValueError as e:
+            raise InvalidEventException("Unable to parse image.  payload=\"%s\" error=%s" % (message.payload, str(e)))
+        
+        timestamp = datetime.now(pytz.timezone('UTC'))
+        
+        # TODO: Flatten JSON, covert into array of key/value pairs
+        return Message(data, timestamp)
 
 class SubPilot(IoTFSubBase):
     """
