@@ -3,17 +3,17 @@ env: tensorflow-1.7
 task:
   train:
     machine: gpu2
-    description: train on 20181203 baseline data with gpu2
+    description: train on 20181220 baseline data with gpu2
     input:
-      - source: exacorp/datasets/baseline_20181203/1
+      - source: exacorp/datasets/baseline_20181220/1
         destination: data
-    command: pip install docopt && pip install donkeycar && python manage.py train --model /output/mypilot --tub /data
+    command: python manage.py train --model /output/mypilot --tub /data
 
   test_train:
     machine: cpu
-    description: test train on 20181203 baseline data with cpu
+    description: test train on 20181220 baseline data with cpu
     input:
-      - source: exacorp/datasets/baseline_20181203/1
+      - source: exacorp/datasets/baseline_20181220/1
         destination: data
-    command: pip install docopt && pip install donkeycar && python manage.py train --model /output/mypilot --tub /data
+    command: python manage.py train --model /output/mypilot --tub /data
 
