@@ -109,6 +109,7 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
         戻り値
             boolean  オートパイロットモジュールを実行するかどうかの真偽値
         '''
+        print('mode=' + mode)
         if mode == 'user':
             # 全手動時のみ実行しない
             return False

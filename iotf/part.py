@@ -255,7 +255,7 @@ class PubTelemetry(IoTFPubBase):
         msg_dict = {
             "throttle": throttle,
             "angle": angle,
-            "timestamp": datetime.now().isoformat()
+            "timestamp": str(datetime.now())
         }
 
         self.publishJsonEvent(msg_dict=msg_dict)
