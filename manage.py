@@ -26,7 +26,7 @@ from donkeycar.parts.web_controller import LocalWebController
 from donkeycar.parts.clock import Timestamp
 
 # テレメトリデータ送信クラスのインポート
-from iotf.part import PubTelemetry, PubImage
+from iotf.part import PubTelemetry
 #from mosq.part import PubTelemetry
 
 def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
@@ -239,15 +239,10 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
 
 
     # テレメトリーデータの送信
-    # IoTP
     tele = PubTelemetry('iotf/emperor.ini', pub_count=10, debug=True)
-    # eclipse-mosquitto
-    #tele = PubTelemetry('mosq/emperor.yaml')
-    V.add(tele, inputs=['throttle', 'angle'])
-    # テレメトリーデータの送信
-    # IoTP
-    pub = PubImage('iotf/emperor.ini', pub_count=100, debug=True)
-    V.add(pub, inputs=['cam/image_array'])
+    V.add(tele, inputs=['cam/image_array', 'user/mode', 'user/angle', 'user/throttle',
+                  'pilot/angle', 'pilot/throttle'])
+
 
     # Vehicle ループを開始
     V.start(rate_hz=cfg.DRIVE_LOOP_HZ,

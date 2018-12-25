@@ -172,8 +172,9 @@ class IoTFSubBase(LogBase):
             self.log('[__init__] app config loaded options=' + str(app_options))
             self.client = ibmiotf.application.Client(app_options)
             self.log('[__init__] new client')
-            self.client.setMessageEncoderModule('image', ImageCodec)
-            self.log('[__init__] add image codec')
+            if msgFormat == 'image':
+                self.client.setMessageEncoderModule('image', ImageCodec)
+                self.log('[__init__] add image codec')
         except ibmiotf.ConnectionException  as e:
             self.log('[__init__] config load failed ' + app_conf_path)
             raise e
@@ -229,12 +230,16 @@ class PubTelemetry(IoTFPubBase):
         self.pub_count = abs(pub_count)
         self.log('[__init__] end')
 
-    def run(self, throttle, angle):
+    def run(self, image_array, user_mode, user_angle, user_throttle, pilot_angle, pilot_throttle):
         """
         スロットル値、アングル値を含むJSONデータをMQTTブローカへ送信する。
         引数
-            throttle        スロットル値
-            angle           アングル値
+            image_array         カメラ画像イメージデータ(np.ndarray)
+            user_mode           運転モード(user,local_angle,local)
+            user_angle          手動操作によるアングル値
+            user_throttle       手動操作によるスロットル値
+            pilot_angle         自動運転アングル値
+            pilot_throttle      自動運転スロットル値
         戻り値
             なし
         """
@@ -245,63 +250,77 @@ class PubTelemetry(IoTFPubBase):
             return
         else:
             self.count = 0
-        if abs(abs(throttle) - abs(self.throttle)) < self.delta and abs(abs(angle) - abs(self.angle)) < self.delta:
+        
+        angle, throttle = self.getAction(user_mode, user_angle, user_throttle, pilot_angle, pilot_throttle)
+        if self.isInDelta(user_mode, user_angle, user_throttle, pilot_angle, pilot_throttle):
             self.log('[run] ignnore data, delta is small th:[{}, {}] an[{}, {}]'.format(
                 str(throttle), str(self.throttle), str(angle), str(self.angle)))
-            self.throttle = throttle
-            self.angle = angle
-            return
 
         msg_dict = {
-            "throttle": throttle,
-            "angle": angle,
-            "timestamp": str(datetime.now())
+            "user_mode":        user_mode,
+            "user_angle":       user_angle,
+            "user_throttle":    user_throttle,
+            "pilot_angle":      pilot_angle,
+            "pilot_throttle":   pilot_throttle,
+            "angle":            angle,
+            "throttle":         throttle,
+            "timestamp":        str(datetime.now())
         }
 
-        self.publishJsonEvent(msg_dict=msg_dict)
-        self.throttle = throttle
-        self.angle = angle
-        self.log('[run] publish :' + json.dumps(msg_dict))
-    
-    def shutdown(self):
-        self.disconnect()
-        self.log('[shutdown] disconnect client')
-
-class PubImage(IoTFPubBase):
-    """
-    イメージデータを送信する。
-    """
-    def __init__(self, dev_conf_path, pub_count=1000, debug=False):
-        """
-        ログ出力準備を行い、設定ファイルを読み込みMQTTクライアントの接続を確立する。
-
-        引数
-            dev_conf_path   設定ファイルへのパス
-            pub_count       publishが実行される間隔
-            debug           デバッグフラグ
-        戻り値
-            なし
-        """
-        super().__init__(dev_conf_path, debug)
-        self.log('[__init__] end')
-
-    def run(self, image_array):
-        """
-        イメージデータをMQTTブローカへ送信する。
-        引数
-            image_array    イメージデータ（バイナリ）
-        戻り値
-            なし
-        """
-        #self.log('[run] convert ndarray to list')
-        #msg_bin = image_array #.tolist()
         self.publishImageEvent(msg_bin=image_array)
-        self.log('[run] publish image message')
+        self.publishJsonEvent(msg_dict=msg_dict)
+        self.angle = angle
+        self.throttle = throttle
+        self.log('[run] published telemetry data')
+
+    def getAction(self, user_mode, user_angle, user_throttle, pilot_angle, pilot_throttle):
+        """
+        ユーザモードから実際にDonkey Carが採用したアングル値、スロットル値を返却する。
+
+        引数
+            user_mode           運転モード(user,local_angle,local)
+            user_angle          手動操作によるアングル値
+            user_throttle       手動操作によるスロットル値
+            pilot_angle         自動運転アングル値
+            pilot_throttle      自動運転スロットル値
+        戻り値
+            angle               実際に採用したアングル値
+            throttle            実際に採用したスロットル値
+        """
+        # 運転モードから実際に使用されたアングル、スロットル値を判断
+        if user_mode == 'user':
+            return user_angle, user_throttle
+        elif user_mode == 'local_angle':
+            return user_angle, pilot_throttle
+        else:
+            return pilot_angle, pilot_throttle
+
+    def isInDelta(self, user_mode, user_angle, user_throttle, pilot_angle, pilot_throttle):
+        """
+        アングル、スロットル値が前に送信した値とほとんど変わらないかどうかを判定する。
+
+        引数
+            user_mode           運転モード(user,local_angle,local)
+            user_angle          手動操作によるアングル値
+            user_throttle       手動操作によるスロットル値
+            pilot_angle         自動運転アングル値
+            pilot_throttle      自動運転スロットル値
+        戻り値
+            eval                しきい値範囲内：真、しきい値範囲外：偽
+        """
+        # 運転モードから実際に使用されたアングル、スロットル値を判断
+        angle, throttle = self.getAction(user_mode, user_angle, user_throttle, 
+        pilot_angle, pilot_throttle)
+
+        # アングル、スロットル値が前に送信した値とほとんど変わらないかどうか
+        isInDelta_throttle = abs(abs(throttle) - abs(self.throttle)) < self.delta
+        isInDelta_angle =  abs(abs(angle) - abs(self.angle)) < self.delta
+        return isInDelta_throttle and isInDelta_angle
+            
     
     def shutdown(self):
         self.disconnect()
         self.log('[shutdown] disconnect client')
-
 
 class ImageCodec(MessageCodec):
     """
