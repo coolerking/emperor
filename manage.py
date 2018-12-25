@@ -26,8 +26,7 @@ from donkeycar.parts.web_controller import LocalWebController
 from donkeycar.parts.clock import Timestamp
 
 # テレメトリデータ送信クラスのインポート
-from iotf.part import PubTelemetry
-#from mosq.part import PubTelemetry
+from iotf import PubTelemetry
 
 def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
     """
