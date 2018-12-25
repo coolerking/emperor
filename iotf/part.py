@@ -267,6 +267,8 @@ class PubTelemetry(IoTFPubBase):
             "timestamp":        str(datetime.now())
         }
 
+
+        self.log('[run] image_arrat type: ' + type(image_array))
         self.publishImageEvent(msg_bin=image_array)
         self.publishJsonEvent(msg_dict=msg_dict)
         self.angle = angle
@@ -337,13 +339,12 @@ class ImageCodec(MessageCodec):
         型式は(120, 160, 3)。
 
         引数
-            data        送信データ(np.ndarray型式)
+            data        送信データ
             timestamp   タイムスタンプ
         戻り値
-            img         文字列化されたdata
+            data        送信データ        
         """
-        img = data.tostring()
-        return img
+        return data
     
     @staticmethod
     def decode(message):
