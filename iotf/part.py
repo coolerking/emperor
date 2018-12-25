@@ -268,7 +268,7 @@ class PubTelemetry(IoTFPubBase):
         }
 
 
-        self.log('[run] image_arrat type: ' + type(image_array))
+        #self.log('[run] image_arrat type: ' + type(image_array))
         self.publishImageEvent(msg_bin=image_array)
         self.publishJsonEvent(msg_dict=msg_dict)
         self.angle = angle
