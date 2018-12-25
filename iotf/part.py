@@ -335,8 +335,7 @@ class ImageCodec(MessageCodec):
     def encode(data=None, timestamp=None):
         """
         data を送信可能なデータに変換する。
-        dataは numpy.ndarray型式、各要素はuint8、全要素バイト数は57600、
-        型式は(120, 160, 3)。
+        data がnp.ndarray型の場合はtobytes()を返却する。
 
         引数
             data        送信データ
@@ -344,6 +343,8 @@ class ImageCodec(MessageCodec):
         戻り値
             data        送信データ        
         """
+        if type(data) is np.ndarray:
+          return data.tobytes()
         return data
     
     @staticmethod
