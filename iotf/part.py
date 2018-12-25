@@ -11,6 +11,7 @@ pip install ibmiotf
 import os
 import json
 import numpy as np
+import donkeycar as dk
 import logging
 #import datetime
 from ibmiotf import MessageCodec, Message, InvalidEventException
@@ -344,7 +345,7 @@ class ImageCodec(MessageCodec):
             data        送信データ        
         """
         if type(data) is np.ndarray:
-          return data.tobytes()
+          return dk.util.img.arr_to_binary(data)
         return data
     
     @staticmethod
