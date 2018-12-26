@@ -26,7 +26,7 @@ from donkeycar.parts.web_controller import LocalWebController
 from donkeycar.parts.clock import Timestamp
 
 # テレメトリデータ送信クラスのインポート
-from iotf import PubTelemetry
+from iotf.part import PubTelemetry
 
 def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
     """
@@ -76,7 +76,7 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
         #                         auto_record_on_throttle=cfg.AUTO_RECORD_ON_THROTTLE)
 
         # ジョイスティック part の生成
-        from elecom.jc_u3912t import JoystickController
+        from elecom.part import JoystickController
         ctr = JoystickController(config_path='elecom/jc-u3912t.yml')
     else:
         # ステアリング、スロットル、モードなどを管理するWebサーバを作成する
