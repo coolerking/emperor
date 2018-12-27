@@ -16,12 +16,15 @@ class ImageChecker:
             #print(len(bin))
             print(image.dtype)
             # PiCamera -> np.ndarray型式 (120,160,3)
-            image2 = dk.util.img.binary_to_img(image)
+            print('*** image2')
+            image2 = dk.util.img.binary_to_img(bin)
+            print(type(image2))
             image3 = dk.util.img.img_to_arr(image2)
             print('*** image3')
             print(image3)
             print(type(image3))
             print(image == image3)
-
+            print(image3.shape)
+            print(image3.dtype)
         print('************************')
 
