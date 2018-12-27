@@ -68,6 +68,11 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
     #     'cam/image_array'    cfg.CAMERA_RESOLUTION 型式の画像データ
     V.add(cam, outputs=['cam/image_array'], threaded=True)
 
+    ##debug
+    from part import ImageChecker
+    checker = ImageChecker()
+    V.add(checker, inputs=['cam/image_array'])
+
     # manage.py デフォルトのジョイスティックpart生成
     if use_joystick or cfg.USE_JOYSTICK_AS_DEFAULT:
         #ctr = JoystickController(max_throttle=cfg.JOYSTICK_MAX_THROTTLE,
