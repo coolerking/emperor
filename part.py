@@ -10,5 +10,9 @@ class ImageChecker:
         print(type(image))
         if type(image) is np.ndarray:
             print(image.shape)
+            bin = dk.util.img.arr_to_binary(image)
+            print(bin)
+            print(type(bin))
+            print(len(bin))
         print('************************')
 
