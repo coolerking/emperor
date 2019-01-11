@@ -238,9 +238,9 @@ def drive(cfg, model_path=None, use_joystick=False, use_chaos=False):
 
 
     # テレメトリーデータの送信
-    tele = PubTelemetry('iotf/emperor.ini', pub_count=20*5, debug=True)
+    tele = PubTelemetry('iotf/emperor.ini', pub_count=20*5)
     V.add(tele, inputs=['cam/image_array', 'user/mode', 'user/angle', 'user/throttle',
-                  'pilot/angle', 'pilot/throttle'])
+                  'pilot/angle', 'pilot/throttle', 'angle', 'throttle'])
 
 
     # Vehicle ループを開始
