@@ -83,7 +83,7 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
    hexdump /dev/input/js0
    ```
    hexdumpを実行後、F710を適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
-7. `~/mycar/manage.py` を次のように編集する
+7. `~/emperor/manage.py` を次のように編集する
    ```python
         # F710用ジョイスティックコントローラを使用
         from parts.logicool import F710_JoystickController
@@ -109,7 +109,7 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
    hexdump /dev/input/js0
    ```
    hexdumpを実行後、F710を適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
-7. `~/mycar/manage.py` を次のように編集する
+7. `~/emperor/manage.py` を次のように編集する
    ```python
         # F710用ジョイスティックコントローラを使用
         from parts.logicool import F710_JoystickController
@@ -121,7 +121,7 @@ WORRIORベースのDonkey Car独自アプリのディレクトリをリポジト
         #from parts.elecom import JC_U3912T_JoystickController
         #ctr = JC_U3912T_JoystickController(
    ```
-8. ジョイスティック上のボタン割り当てを変更する場合は、`parts\elecom.py` の以下のコードを編集する。
+8. ジョイスティック上のボタン割り当てを変更する場合は、`~/emperor/parts/elecom.py` の以下のコードを編集する。
    ```python
         self.button_down_trigger_map = {
             '11': self.toggle_mode,                # 運転モード変更(user, local_angle, local)
@@ -164,7 +164,7 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
    hexdump /dev/input/js0
    ```
    hexdumpを実行後、Dualshock4コントローラを適当に操作すると、ヘキサダンプが表示されれば、正常。Ctrl+Cで終了する。
-7. `~/mycar/manage.py` を次のように編集する
+7. `~/emperor/manage.py` を次のように編集する
    ```python
         # F710用ジョイスティックコントローラを使用
         #from parts.logicool import F710_JoystickController
@@ -202,6 +202,14 @@ donkeypart_ps3_controller パッケージと [別売りUSBドングル](https://
         }
    ```
 
+### WiFi強度計測スクリプトのセットアップ
+
+1. スクリプト `~/emperor/bin/getsi` を `/usr/local/bin/getsi` へコピーする
+   ```bash
+   cd ~/emperor/bin
+   sudo cp ./getsi /usr/local/bin/
+   sudo chmod a+x /usr/local/bin/getsi 
+   ```
 
 ## 実行
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Filename:getsi
+#
+# get wifi levels on emperor donkey car
+#
+# # Setup
+# sudo cp getsi /usr/local/bin
+# sudo chmod a+x /usr/local/bin/getsi
+#
+sudo iwlist wlan0 scan | grep -e Address -e Quality
