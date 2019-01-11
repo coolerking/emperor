@@ -75,7 +75,7 @@ class PubTelemetry:
         while(i<total):
             word = str(bytewords[i]).split('\'')[1]
             if word.startswith('Address'):
-                key = str(bytewords[i+1]).split('\'')
+                key = str(bytewords[i+1]).split('\'')[1]
                 value = str(bytewords[i+2])
                 value = value.split('=')[1]
                 value = value.split('/')[0]
